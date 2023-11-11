@@ -36,9 +36,192 @@
 % ---- Content ----
 
    
+
+\section{Introduction to course}
+
+\subsection{What is Mixtape Sessions?}
+
+
+\begin{frame}{Welcome!}
+
+  \begin{itemize}
+	\item I'm Scott Cunningham, professor of economics at Baylor University, author of \underline{Causal Inference: the Mixtape}
+	\item I teach and host workshops on causal inference all over the world because I believe many people do not have all the opportunities they want to have that they believe will help them be successful in their research and careers 
+	\item Workshops can be helpful ways to plug into one's methodological training, and online workshops are very helpful because of the recordings, the coding together, and bunch of bells and whistles (e.g., github repositories)
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{What is Mixtape Sessions?}
+
+  \begin{itemize}
+    \item Mixtape Sessions is my online platform started in November 2021 to ``democratize causal inference'' by helping connect people, from beginner to advanced, with material and teachers that for various reasons may not be accessible otherwise
+    \item I became obsessed with teaching and writing about causal inference because of a strong conviction that (a) it is important and (b) not everyone had the same chances to learn it
+    \item I tend to emphasize intuition, mechanics, narrow calculations, meaning, assumptions, code including actually taking time to code, advocate for data visualization -- in other words the art and the science
+    \item I decided to start teaching a workshop on synthetic control given it is considered one of the more important innovations in causal inference of the last twenty years (Athey and Imbens 2017)
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{2-day Causal Inference Workshop}
+
+  \begin{itemize}
+    \item We workshop together for 2-days, 9am to 5pm CST with 15 min breaks on the hour and a 1-hour lunch break at noon CST
+    \item I mix exposition, discussion of papers, coding exercises and discussion as best as I can
+    \item Music at intermissions fyi
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{What my pedagogy is like}
+
+\begin{itemize}
+\item Long days that don't feel long because it's high energy, with regular breaks including lunch
+\item Move between the econometrics, history of thought, videos, applications, code, spreadsheets, exercises
+\item Ask questions at any point; I'll do my best to answer them
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Managing your expectations}
+
+\begin{frame}{Class goals}
+
+  \begin{enumerate}
+    \item \textbf{Confidence}: You will feel like you have a good understanding of causal inference so that by the end it doesn't feel all that mysterious or intimidating
+    \item \textbf{Comprehension}: You will have learned a lot both conceptually and in the specifics, particularly with regards to issues around identification and estimation
+    \item \textbf{Competency}: You will have more knowledge of programming syntax in Stata and R (and python!) so that later you can apply this in your own work
+  \end{enumerate}
+
+\end{frame}
+
+
+%\begin{frame}{Causal Inference table of contents}
+%  \centering
+%  \includegraphics[scale=0.5,height=6.5cm, width=10cm]{./lecture_includes/part1}
+%\end{frame}
+
+%\begin{frame}{Causal Inference Part 2}
+%  \centering
+%  \includegraphics[scale=0.5,height=6.5cm, width=10cm]{./lecture_includes/part2}
+%  \url{https://www.mixtapesessions.io/session/ci_II_aug20}
+%\end{frame}
+
+
+
+
+\begin{frame}{Github repo}
+
+  \begin{itemize}
+    \item We will communicate with one another regularly in the Discord channel and I will always be monitoring it
+    \item Encourage you to talk to each other there, help one another, network with one another, coauthor with one another!
+    \item I will be distributing things to you, like code and slides, via the github repo: \url{https://github.com/Mixtape-Sessions/Causal-Inference-3.git}
+    \item Each lecture will be recorded and then uploaded to Vimeo as a password protected file that you'll have access to into perpetuity
+    \item Kyle Butts and I are committed to over time making the Github Repository like an open public library where the only club goods are (a) recordings, (b) Discord and (c) live lectures
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Topics}
+
+  \begin{enumerate}
+    \item Canonical synthetic control with non-negative weighting
+    \item Regularization methods and negative weighting
+	\item Matrix completion with nuclear norm regularization
+	\item Synthetic difference-in-differences
+  \end{enumerate}
+
+\end{frame}
+
+\subsection{Potential outcomes review}
+
+\begin{frame}{Steps of a project}
+
+\begin{enumerate}
+\item Convert research question into causal parameter
+\item Deduce beliefs needed to estimate that causal parameter with data
+\item Choose an estimator that will use data to estimate the causal parameter
+\end{enumerate}
+
+\bigskip
+
+Historically, regression models were the primary tools used in causal inference, and so there was a quick jump past (1) and (2) and straight to (3), but this can lead to problems. Estimators don't "work" -- they either are or are not appropriate. We must understand first the question then the assumptions needed to answer it, and that requires causal notation
+
+\end{frame}
+
+
+\begin{frame}{Potential outcomes history}
+
+\begin{itemize}
+
+\item Causal inference is a scientific field within and across all major scientific categories focused on the epistemological foundations for believing one thing causes another
+\item Core idea in causal inference is to distinguish between what is the true (``realized outcome'') versus what may have been possible had something been different (``counterfactual'')
+\item Many people lay ownership to the following notation but it's broadly thought the mathematical notation comes from Jerzy Neyman's 1923 masters thesis, but you can find the ideas before him (e.g., John Stuart Mill, Ronald Fisher)
+\item Most commonly associated today with Don Rubin, former chair of Harvard's stats department (now retired)
+
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Potential outcomes notation}
+	
+	\begin{itemize}
+	\item Let the treatment be a binary variable: $$D_{i,t} =\begin{cases} 1 \text{ if in job training program $t$} \\ 0 \text{ if not in job training program at time $t$} \end{cases}$$where $i$ indexes an individual observation, such as a person
+
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Potential outcomes notation}
+	
+	\begin{itemize}
+
+	\item Potential outcomes: $$Y_{i,t}^j =\begin{cases} 1 \text{: wages at time $t$ if trained} \\ 0 \text{: wages at time $t$ if not trained} \end{cases}$$where $j$ indexes a counterfactual state of the world
+
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Treatment effect definitions}
+
+
+	\begin{block}{Individual treatment effect}
+	    The individual treatment effect,  $\delta_i$, equals $Y_i^1-Y_i^0$
+	\end{block}
+
+Missing data problem:  I don't know my own counterfactual
+	
+\end{frame}
+
+
+\begin{frame}{Conditional Average Treatment Effects}	
+	\begin{block}{Average Treatment Effect on the Treated (ATT)}
+	The average treatment effect on the treatment group is equal to the average treatment effect conditional on being a treatment group member:
+		\begin{eqnarray*}
+		E[\delta|D=1]&=&E[Y^1-Y^0|D=1] \nonumber \\
+		&=&E[Y^1|D=1]-\textcolor{red}{E[Y^0|D=1]}
+		\end{eqnarray*}
+	\end{block}
+	
+	\bigskip
+
+This is one of the most important policy parameters, if not the most important, and coincidentally it's also the parameter you get with synthetic control.  
+
+	
+\end{frame}
+
+
+
+
 \section{Synthetic control}
 
-\subsection{Abadie, Diamond and Hainmueller}
+\subsection{Original synthetic control method}
 
 
 \begin{frame}[plain]
@@ -136,6 +319,7 @@
 \end{frame}
 
 
+
 \begin{frame}{Selecting control groups}
 
 \begin{itemize}
@@ -168,9 +352,11 @@
 \begin{frame}{Parallel trends}
 
 \begin{itemize}
-\item His estimate is unbiased if the change in $Y^0$ for the comparison cities correctly approximates the unobserved $\textcolor{violet-red}{\Delta Y^0}$ for the treatment group
-\item But Card largely focused on covariates, and in a relatively casual way (``similar growth'') and does not report much
-\item Black result would have been positive, too, were it not that the comparison cities growth was smaller -- uncertainty about null result being from no effect or arbitrary control group
+\item Card's analysis used diff-in-diff to estimate the impact of the Mariel boatlift on domestic labor markets
+\item His estimate is unbiased if $\Delta E[Y^0]$ for the comparison cities approximates the counterfactual $\textcolor{violet-red}{\Delta E[Y^0]}$ for the treatment group
+\item Card selected his controls based on a mixture of matching logic (e.g., covariates) and trend logic (e.g., employment growth) but does not report much
+\item Black result would have been positive, too, were it not that the comparison cities growth was twice as large
+\item Creates uncertainty about his null result -- was it no effect or was it the control group?
 \end{itemize}
 
 \end{frame}
@@ -179,7 +365,7 @@
 \begin{frame}{Synthetic Control}
 	
 	\begin{itemize}
-	\item Abadie and Gardeazabal (2003) introduced synthetic control in the AER in a study of a terrorist attack in Spain (Basque) on GDP
+	\item Abadie and Gardeazabal (2003) introduced synthetic control in the AER in a study of a terrorist attack in Spain (Basque Country) on GDP
 	\item Revisited again in a 2010 JASA with Diamond and Hainmueller, two political scientists who were PhD students at Harvard (more proofs and inference)
 	\item Basic idea is to use a combination of comparison units as counterfactual for a treated unit where the units are chosen according to a data driven procedure
 	\end{itemize}
@@ -189,6 +375,8 @@
 \begin{frame}{Researcher's objectives}
 
 \begin{itemize}
+	\item Synthetic control is a constrained minimization problem where the target goal is the minimization of a vector of squared gaps in pre-treatment characteristics
+	\item Choice vector is an endogenous weights that are constant per control group unit over time and range from [0,1). 
 	\item Our goal here is to reproduce the counterfactual of a treated unit by finding the combination of untreated units that best resembles the treated unit \emph{before} the intervention in terms of the values of $k$ relevant covariates (predictors of the outcome of interest)
 	\item Method selects \emph{weighted average of all potential comparison units} that best resembles the characteristics of the treated unit(s) - called the ``synthetic control''
 \end{itemize}
@@ -198,7 +386,7 @@
 \begin{frame}{Synthetic control method: advantages}
 	
 	\begin{itemize}
-	\item ``Convex hull'' means synth is a weighted average of units which means the counterfactual is a collection of comparison units that on average track the treatment group over time.
+	\item ``Convex hull'' means synth is a non-negatively weighted average of donor pool units that on closely resemble the treatment group over time.
 	\item Constraints on the model use non-negative weights which does not allow for extrapolation 
 	\item Makes explicit the contribution of each comparison unit to the counterfactual 
 	\item Formalizing the way comparison units are chosen has direct implications for inference
@@ -206,33 +394,6 @@
 \end{frame}
 
 
-\begin{frame}{Synthetic control method: disadvantages}
-
-\begin{enumerate}
-\item Subjective researcher bias kicked down to the model selection stage
-\item Significant diversity at the moment as to how to principally select models - from machine learning to modifications - as well as estimation and software
-\item Part of the purpose of this procedure is to reduce subjective researcher bias
-\item Ferman, Pinto and Possbaum (2020) suggest specific specifications and report all of them
-\end{enumerate}
-
-\end{frame}
-
-
-\begin{frame}{Avoiding cherry picking}
-
-	\begin{figure}
-	\includegraphics[scale=0.5]{./lecture_includes/cherry_picking_1.png}
-	\end{figure}
-
-\end{frame}
-
-\begin{frame}{Avoiding cherry picking}
-
-	\begin{figure}
-	\includegraphics[scale=0.5]{./lecture_includes/cherry_picking_2.png}
-	\end{figure}
-
-\end{frame}
 
 
 \begin{frame}{Notation and setup}
@@ -318,64 +479,6 @@ Typically, $V$ is diagonal with main diagonal $v_1, \dots, v_k$.  Then, the synt
 \end{frame}
 
 
-\begin{frame}{Suppose $Y^0$ is given by a factor model}
-
-What about unmeasured factors affecting the outcome variables as well as heterogeneity in the effect of observed and unobserved factors?
-\begin{eqnarray*}
-Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
-\end{eqnarray*}where $\alpha_t$ is an unknown common factor with constant factor loadings across units, and $\lambda_t$ is a vector of unobserved common factors
-
-\end{frame}
-
-\begin{frame}{KYLE EDIT: Factor Model Intuition}
-  Untreated potential outcomes are given by a factor model:
-  \begin{equation}\label{eq:untreated_po}
-    Y_{it}^0 = \alpha_t + \textcolor{navy}{\lambda_t} \textcolor{orange}{u_i} + u_{it}
-  \end{equation}
-
-  \begin{itemize}
-    \item $\lambda_t$ is the set of \textcolor{navy}{factors} (macroeconomic shock) at time $t$.
-    \item $u_i$ is unit i's \textcolor{orange}{factor loading} (exposure) to the shocks.
-  \end{itemize}
-
-  For example, $\lambda_t$ is a shock to the returns to technological ability and $u_i$ is unobserved ability.
-\end{frame}
-
-\begin{frame}{KYLE EDIT: Two-way Fixed Effect vs. Factor Model}
-  The factor model is a generalization of the TWFE model. If $\lambda_{t} = (\mu_t, 1)'$ and $u_i = (1, \mu_i)'$, then (\ref{eq:untreated_po}) becomes:
-  $$
-    Y_{it}^0 = \lambda_t + \mu_i + u_{it}
-  $$
-  
-  Since TWFE is the work-horse model used by applied researchers, later we will explicitly add unit and time fixed-effects back in.
-\end{frame}
-
-\begin{frame}{Synthetic Control Bias Under Factor Model}
-
-\begin{eqnarray*}
-  Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
-  ^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
-  && - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
-\end{eqnarray*}
-
-\begin{itemize}
-  \item If $\sum_{t=1}^{T_0} \lambda_t' \lambda_t$ is nonsingular, then RHS will be close to zero if number of preintervention periods is ``large''  relative to size of transitory shocks 
-  \item Only units that are alike in observables and unobservables (factor-loadings!) should produce similar trajectories of the outcome variable over extended periods of time
-  \item Proof in Appendix B of ADH (2011)
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{KYLE EDIT: Synthetic Control Bias Under Factor Model}
-  Synthetic control will do well when you have many time-periods because:
-  \begin{enumerate}
-    \item You will not fit on the error term $\epsilon_{it}$ 
-    \item Instead, you will find a synthetic control with the same \emph{exposure} to macro-economic shocks (matching on factor-loadings)
-  \end{enumerate}
-
-  \bigskip
-  More on few time-periods / imperfect fit later...
-\end{frame}
 
 \begin{frame}{Example: California's Proposition 99}
 	
@@ -405,6 +508,14 @@ Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
 	\includegraphics[scale=0.75]{./lecture_includes/abadie_4.pdf}
 	\end{figure}
 \end{frame}
+
+\begin{frame}{Sparsity and Synthetic Control Weights}
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/synth_smoking_table2.png}
+	\end{figure}
+\end{frame}
+
+
 
 \begin{frame}{Predictor Means: Actual vs. Synthetic California}
 	
@@ -521,7 +632,7 @@ Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
 \end{frame}
 
 \begin{frame}[plain]
-  \includegraphics{./lecture_includes/flow_rate_figure.pdf}
+  \includegraphics[scale=0.8]{./lecture_includes/flow_rate_figure.pdf}
 \end{frame}
 
 \begin{frame}{Texas prison boom}
@@ -566,9 +677,6 @@ Governor Ann Richards (D) 1991-1995
 \end{frame}
 
 
-
-
-
 \begin{frame}{Coding together}
 
 \begin{itemize}
@@ -580,10 +688,303 @@ Governor Ann Richards (D) 1991-1995
 \end{frame}
 
 
+\begin{frame}{Avoiding Cherry Picking: Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_8.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_1.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_2.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/subway_3.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/subway_4.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.35]{./lecture_includes/subway_5.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.35]{./lecture_includes/subway_6.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Cherry picking synthetic controls}
+
+\begin{itemize}
+\item Abadie, et al. recommended a nested minimization problem using the preintervention data to estimate the SC weights, but very little to no guidance was provided beyond that
+\item Historically, a broad range of selection of pre-treatment characteristics were used by early researchers which created researcher degrees of freedom or ``cherry picking synthetic controls''
+\item Ferman, Pinto and Possbaum (2020) suggest specific specifications and report all of them with and without covariates
+\item Here's an example of the kinds of tables and graphical evidence they suggested researchers follow (followed by what we did)
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Show p-values across all recommended specifications}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/cherry_picking_1.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Show event study (not placebo) across all recommended specifications}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/cherry_picking_2.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_robustness.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_7.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Summarizing}
+
+\begin{itemize}
+
+\item Method is simple: take donor pool units and find a combination of units, weight them, that minimize a distance function subject to two weight constraints $W*$ and $V*$.
+\item But what is the bias and what can we do when we think the bias is severe?
+\item We now move towards that now by examining the nature of the bias in synthetic control
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Suppose $Y^0$ is given by a factor model}
+
+
+\begin{itemize}
+\item What about unmeasured factors affecting the outcome variables as well as heterogeneity in the effect of observed and unobserved factors?
+
+\item Abadie, et al. assume that the missing potential outcome, $Y^0_{it}$, is generated using a factor model
+
+\begin{eqnarray*}
+Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
+\end{eqnarray*}
+
+%where $\alpha_t$ is an unknown common factor with constant factor loadings across units, and $\lambda_t$ is a vector of unobserved common factors
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Factor Model Intuition}
+  Untreated potential outcomes are given by a factor model:
+  \begin{equation}\label{eq:untreated_po}
+    Y_{it}^0 = \alpha_t + \theta_t Z_i + \textcolor{navy}{\lambda_t} \textcolor{orange}{u_i} + \varepsilon_{it}
+  \end{equation}
+
+  \begin{itemize}
+ \item $Z_i$ is observed features, $u_i$ is unobserved features, $\varepsilon_{it}$ is unit-level transitory shock
+    \item $\lambda_t$ is the set of \textcolor{navy}{factors} (macroeconomic shock) at time $t$.
+    \item $u_i$ is unit i's \textcolor{orange}{factor loading} (exposure) to the shocks.
+  \end{itemize}
+
+  For example, $\lambda_t$ is a shock to the returns to technological ability and $u_i$ is unobserved ability.
+\end{frame}
+
+
+\begin{frame}{Factor Model Intuition}
+  Untreated potential outcomes are given by a factor model:
+  \begin{equation}\label{eq:untreated_po}
+    Y_{it}^0 = \alpha_t + \theta_t Z_i + \textcolor{navy}{\lambda_t} \textcolor{orange}{u_i} + \varepsilon_{it}
+  \end{equation}
+
+
+Suppose we found $W^*$ such that:
+
+ $$\sum^{J+1}w^*_jY_{jt}=Y_{1t}$$ $$\sum^{J+1}w^*_jZ_{j}=Z_{1}$$ and so on. This may only hold approximately in your sample. If you're able to do that, then you can establish a bound on the bias of the estimator.
+
+\end{frame}
+
+
+\begin{frame}{Synthetic Control Bias Under Factor Model}
+
+\begin{eqnarray*}
+  Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
+  ^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
+  && - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
+\end{eqnarray*}
+
+\begin{itemize}
+  \item If $\sum_{t=1}^{T_0} \lambda_t' \lambda_t$ is nonsingular, then RHS will be close to zero if number of preintervention periods is ``large''  relative to size of transitory shocks 
+  \item Only units that are alike in observables and unobservables should produce similar trajectories of the outcome variable over extended periods of time
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Synthetic control bounds}
+
+\begin{itemize}
+  \item Abadie, et al. 2010 shows the bounds on the bias and it is based on how closely you're able to fit the synthetic control to the treatment group over time
+  \item Bias bound is controlled by a ratio between the scale of the transitory shocks, $\varepsilon_{it}$, and the time length
+  \item Your credibility of a synthetic control depends on the extent to which it is able to fit a trajectory  $Y_{1t}$ for an extended pre-intervention period
+ \end{itemize}
+ 
+ \end{frame}
+
+
+
+\begin{frame}{Example of long $T_0$ and transitory shocks}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/restud_titlepage}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Example of long $T_0$ and transitory shocks}
+
+	\begin{figure}
+	\includegraphics[scale=0.20]{./lecture_includes/restud_rapesynth}
+	\end{figure}
+
+\end{frame}
+
+
+
+
+\begin{frame}{ Synthetic Control Bias Under Factor Model}
+  Synthetic control will do well when you have many time-periods because:
+  \begin{enumerate}
+    \item You will not fit on the error term $\varepsilon_{it}$ 
+    \item Instead, you will find a synthetic control with the same \emph{exposure} to aggregate shocks (matching on factor-loadings)
+  \end{enumerate}
+
+  \bigskip
+  But what about when we don't have good fit?
+\end{frame}
+
+\subsection{Imperfect fit: Demeaned synthetic control}
+
+\begin{frame}{From Abadie, et al. (2010)}
+
+	\begin{figure}
+	\includegraphics[scale=0.40]{./lecture_includes/abadie_imperfect_fit}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Ferman and Pinto (2021)}
+
+	\begin{figure}
+	\includegraphics[scale=0.20]{./lecture_includes/ferman_pinto2021}
+	\end{figure}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{Imperfect pre-treatment fit }
+
+\begin{itemize}
+
+\item Ferman and Pinto (2021) show that synthetic control will generally be biased if treatment assignment is correlated with an unobserved confounder even in very long pre-treatment periods
+
+\item ``This happens because, in this setting, the SC weights converge to weights that simultaneously attempt to match the factor loadings of the treated unit and to minimize the variance of a linear combination of the idiosyncratic shocks.'' (Ferman and Pinto 2021)
+
+\item So even if you reconstructed the pre-trends with your synth, you may not have recovered the true weights because you'd need a comparison group that was affected by the dynamic confounder in exactly the same way, just not treated
+
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Demeaning to address bias}
+
+\begin{itemize}
+\item Ferman and Pinto (2021) show that the synthetic control estimator converges to the parameter we want \emph{plus linear} combinations of contemporaneous idiosyncratic shocks and common factors
+\item If you assume the idiosyncratic factors cancel out in large samples, then the bias will depend on the differences in how the treated and the synthetic control units are affected by the common shocks
+\item They show that it is generally unbiased under the same conditions as diff-in-diff, and can have lower asymptotic variance, but they recommend showing then both diff-in-diff and demeaned synthetic control
+
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Demeaning to address bias}
+
+\begin{itemize}
+
+\item Cannot compare the original synthetic control with the demeaned synthetic control in terms of bias and variance -- if units with similar factor loadings have similar fixed effects, then matching on levels would be better than demeaning 
+\item Demeaning can increase the variance in finite pre-treatment
+\item Demeaning also implies extrapolating which is often considered to be one of the hallmark strengths of the original synthetic control estimator -- it does not extrapolate 
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{What did we do?}
+
+\begin{itemize}
+\item Our Rhode Island paper began in 2009 and was published in 2018, with working papers in circulation in 2014, well before this imperfect literature
+\item One of our main outcomes was reported female rape offenses per 100,000 as measured in the Uniform Crime Reports 
+\item Rhode Island is a small state so even relatively modest changes year to year in reported rape offenses caused meaningful swings in the outcome series
+\item Our solution was to ``smooth'' using a moving average of each two years -- which was not a demeaning, but rather simply $\frac{Y_t + Y_{t+1}}{2}$
+\end{itemize}
+
+\end{frame}
+
 
 \subsection{Augmented Synthetic Control}
 
-\begin{frame}{Introducing Augmented Synthetic Control}
+\begin{frame}{Augmented Synthetic Control}
 \begin{itemize}
 \item Synthetic control has built in constraints forcing weights to be non-negative
 \item Convex hull constraint ensures that synth is a feasible counterfactual in that it is formed by a combination of control units similar on pre-intervention characteristics
@@ -594,20 +995,13 @@ Governor Ann Richards (D) 1991-1995
 \end{frame}
 
 
-\begin{frame}
-
-\begin{quote}
-``The applicability of the [ADH2010] method requires a sizable number of pre-intervention periods. The reason is that the credibility of a synthetic control depends upon how well it tracks the treated unit’s characteristics and outcomes over an extended period of time prior to the treatment. \textbf{We do not recommend using this method when the pretreatment fit is poor or the number of pretreatment periods is small}. A sizable number of post-intervention periods may also be required in cases when the effect of the intervention emerges gradually after the intervention or changes over time.'' (my emphasis, Abadie, et al. 2015)
-\end{quote}
-
-\end{frame}
 
 \begin{frame}{What is augmented synthetic control?}
 
 \begin{itemize}
 \item Eli Ben-Michael, Avi Feller and Jesse Rothstein present a modification to ADH in which they allow for negative weights, but only minimally so
-\item This model will ``augment'' the original synthetic control model by adjusting for pre-treatment imbalance using doubly robust bias adjustment 
-\item Augmentation is conservative; it uses \textbf{penalized ridge regression} but with constraints such that the negative weighting is only to the convex hull, not to the center of the convex hull
+\item Model will ``augment'' the original synthetic control model by adjusting for pre-treatment imbalance using doubly robust bias adjustment (Abadie and Imbens 2011)
+\item Augmentation is conservative negative re-weighting using \textbf{penalized ridge regression} with constraints such that the negative weighting is only to the convex hull, not to the center of the convex hull (does not over-weight)
 \end{itemize}
 
 \end{frame}
