@@ -6,7 +6,7 @@
 * date: august 28, 2020
 **************************************************************
 
-cd "/Users/scott_cunningham/Documents/Causal-Inference-3/
+cd "/Users/scott_cunningham/Documents/Causal-Inference-3/Labs/Texas/Do"
 capture log close
 capture log using ./texas.log, replace text
 
@@ -14,7 +14,7 @@ capture log using ./texas.log, replace text
 * ssc install mat2txt, replace
 
 * Estimation 1: Texas model of black male prisoners (per capita)
-use texas.dta, replace
+use ../data/texas.dta, replace
 
 
 #delimit;
