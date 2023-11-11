@@ -70,6 +70,7 @@
   \begin{itemize}
     \item We workshop together for 2-days, 9am to 5pm CST with 15 min breaks on the hour and a 1-hour lunch break at noon CST
     \item I mix exposition, discussion of papers, coding exercises and discussion as best as I can
+    \item I see this workshop as attempting to explain the method, explain some papers, but mainly towards providing guidance on projects using synthetic control, not simply the abstractions of the method 
     \item Music at intermissions fyi
   \end{itemize}
 
@@ -79,8 +80,8 @@
 
 \begin{itemize}
 \item Long days that don't feel long because it's high energy, with regular breaks including lunch
-\item Move between the econometrics, history of thought, videos, applications, code, spreadsheets, exercises
-\item Ask questions at any point; I'll do my best to answer them
+\item Move between the econometrics, applications, code, spreadsheets, exercises
+\item Ask questions at any point; I'll do my best to answer them and if I can't Kyle can
 \end{itemize}
 
 \end{frame}
@@ -91,7 +92,7 @@
 \begin{frame}{Class goals}
 
   \begin{enumerate}
-    \item \textbf{Confidence}: You will feel like you have a good understanding of causal inference so that by the end it doesn't feel all that mysterious or intimidating
+    \item \textbf{Confidence}: You will feel like you have a good understanding of synthetic control so that by the end it doesn't feel all that mysterious or intimidating
     \item \textbf{Comprehension}: You will have learned a lot both conceptually and in the specifics, particularly with regards to issues around identification and estimation
     \item \textbf{Competency}: You will have more knowledge of programming syntax in Stata and R (and python!) so that later you can apply this in your own work
   \end{enumerate}
@@ -128,29 +129,43 @@
 \begin{frame}{Topics}
 
   \begin{enumerate}
-    \item Canonical synthetic control with non-negative weighting
-    \item Regularization methods and negative weighting
-	\item Matrix completion with nuclear norm regularization
-	\item Synthetic difference-in-differences
+    \item Synthetic control traditionally without extrapolation
+    \item Synthetic control with extrapolation and bias adjustment
+    \item Multiple treated units, staggered adoption, and merging with diff-in-diff
+	\item Bonus: event studies!
   \end{enumerate}
 
 \end{frame}
 
 \subsection{Potential outcomes review}
 
-\begin{frame}{Steps of a project}
-
-\begin{enumerate}
-\item Convert research question into causal parameter
-\item Deduce beliefs needed to estimate that causal parameter with data
-\item Choose an estimator that will use data to estimate the causal parameter
-\end{enumerate}
-
-\bigskip
-
-Historically, regression models were the primary tools used in causal inference, and so there was a quick jump past (1) and (2) and straight to (3), but this can lead to problems. Estimators don't "work" -- they either are or are not appropriate. We must understand first the question then the assumptions needed to answer it, and that requires causal notation
-
+\begin{frame}{Causal Inference vs Prediction}
+  \centering
+  \includegraphics[scale=0.5,height=6.5cm, width=10cm]{./lecture_includes/prediction_causality.png}
 \end{frame}
+
+\begin{frame}{Causal Inference vs Prediction}
+
+  \begin{columns}
+    \column{0.48\linewidth}
+    \centering
+    \textbf{Traditional prediction}
+    \begin{itemize}
+      \item Traditional prediction seeks to detect patterns in data and fit functional relationships between variables with a high degree of accuracy
+      \item ``Does this person have heart disease?'', ``How many books will I sell?''
+      \item It is not predictions of what effect a choice will have, though
+    \end{itemize}
+    \column{0.48\linewidth}
+    \centering
+    \textbf{Causal inference}
+    \begin{itemize}
+      \item Causal inference is also a type of prediction, but it's a prediction of a \emph{counterfactual} associated with a particular \emph{choice taken}
+      \item Causal inference takes that predicted (or imputed) counterfactual and constructs a causal effect that we hope tells us about a future in the event of a similar choice taken
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+
 
 
 \begin{frame}{Potential outcomes history}
@@ -219,7 +234,7 @@ This is one of the most important policy parameters, if not the most important, 
 
 
 
-\section{Synthetic control}
+\section{Synthetic control and Modifications}
 
 \subsection{Original synthetic control method}
 
@@ -233,27 +248,31 @@ This is one of the most important policy parameters, if not the most important, 
 \begin{frame}{What is synthetic control}
 	
 	\begin{itemize}
-	\item Synthetic control has been called the most important innovation in causal inference of the last two decades (Athey and Imbens 2017)
-	\item Originally designed for comparative case studies, but newer developments have extended it to multiple treated units as well as differential timing
-	\item Continues to also be methodologically a frontier for applied econometrics, so consider this talk a starting point for you
+	\item Synthetic control has been called the most important innovation in causal inference of the last two decades by Athey and Imbens (2017)
+	\item Originally designed for comparative case studies, but ongoing developments have extended it to multiple treated units, differential timing, bias adjustment and even modifications to difference-in-differences
+	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and we will try to build a ramp up to that frontier starting with the first method by Alberto Abadie and coauthors in 2003 and 2010
 	\end{itemize}
 \end{frame}
 	
-\begin{frame}{What is a comparative case study}
+\begin{frame}{What is a comparative case study?}
 
 \begin{itemize}
-\item Comparative case studies compare a single unit to another unit to make causal inference
-\item Single treated unit is usually a country, state, firm, etc.
-\item Social scientists traditionally tackled them either qualitatively and quantitatively (more traditional economic approach)
+\item Comparative case studies compare a single aggregate unit (like a country) to another unit (like another country) to make statements about causal effects from aggregate policies or events
+\item But the single treated unit can be any aggregate unit: a country, a state, school, firm, etc. 
+\item Social scientists traditionally approached comparative case studies in one of two ways:
+	\begin{enumerate}
+	\item \textcolor{blue}{Qualitatively} (political science)
+	\item \textcolor{red}{Quantitatively} (economics)
+	\end{enumerate}
 \end{itemize}
 
 \end{frame}
 
 
-\begin{frame}{Qualitative comparative case studies}
+\begin{frame}{\textcolor{blue}{Qualitative} comparative case studies}
 	
 	\begin{itemize}
-	\item In qualitative comparative case studies, the goal might be to reason \emph{inductively} the causal effects of events or characteristics of a single unit on some outcome, oftentimes through logic and historical analysis.  
+	\item In \textcolor{blue}{qualitative} comparative case studies, the goal might be to reason \emph{inductively} the causal effects of events or characteristics of a single unit on some outcome, oftentimes through logic and historical analysis.  
 		\begin{itemize}
 		\item Classic example of comparative case study approach is Alexis de Toqueville's \underline{Democracy in America} (but he is regularly comparing the US to France)
 		\end{itemize}
@@ -262,10 +281,10 @@ This is one of the most important policy parameters, if not the most important, 
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{Traditional quantitative comparative case studies}
+\begin{frame}{Traditional \textcolor{red}{quantitative} comparative case studies}
 
 \begin{itemize}
-	\item Traditional quantitative comparative case studies are explicitly causal designs in that there is a treatment and control, usually involving natural experiment on a single aggregate unit
+	\item Traditional  \textcolor{red}{quantitative}  comparative case studies are explicitly causal designs in that there is a treatment and control, usually involving natural experiment on a single aggregate unit
 	\item Comparison focuses on the the evolution of an aggregate outcome for the unit affected by the intervention to the evolution of the same \emph{ad hoc} aggregate control group (Card 1990; Card and Krueger 1994)
 	\item It'll essentially be diff-in-diff, but it may not use the event study, and the point is the choice of controls is a subset of all possible controls
 \end{itemize}
@@ -273,20 +292,23 @@ This is one of the most important policy parameters, if not the most important, 
 \end{frame}
 
 \begin{frame}{Pros and cons}
-	
-	\begin{itemize}
-	\item Pros:
+	Pros:
+
 		\begin{itemize}
 		\item Takes advantage of policy interventions that take place at an aggregate level (which is common and so this is useful)
 		\item Aggregate/macro data are often available (which may be all we have)
 		\end{itemize}
-	\item Cons:
+\end{frame}
+
+\begin{frame}{Pros and cons}
+	Cons:
+
 		\begin{itemize}
 		\item Selection of control group is \emph{ad hoc} -- opens up researcher biases, even unconscious
 		\item Standard errors do not reflect uncertainty about the ability of the control group to reproduce the counterfactual of interest
 		\end{itemize}
-	\end{itemize}
 \end{frame}
+
 
 \begin{frame}{Description of the Mariel Boatlift}
 	
@@ -782,7 +804,9 @@ Governor Ann Richards (D) 1991-1995
 	\end{figure}
 
 \end{frame}
-\begin{frame}{Subway franchise and Scandal}
+
+
+\begin{frame}{Subway franchise and Scandal}
 
 	\begin{figure}
 	\includegraphics[scale=0.25]{./lecture_includes/subway_7.png}
@@ -980,9 +1004,12 @@ Suppose we found $W^*$ such that:
 \end{itemize}
 
 \end{frame}
-
 
-\subsection{Augmented Synthetic Control}
+
+
+
+
+\subsection{Imperfect fit: Augmented Synthetic Control}
 
 \begin{frame}{Augmented Synthetic Control}
 \begin{itemize}
@@ -1566,7 +1593,7 @@ See Appendix A for more details
 \end{frame}
 
 
-\begin{frame}{Augmented synth is better}
+\begin{frame}{Augmented synth vs original synthetic control}
 
 \begin{itemize}
 \item In conclusion, synthetic control is best when pre-treatment fit is excellent, otherwise it is biased
@@ -1585,6 +1612,391 @@ See Appendix A for more details
 R: \url{https://github.com/ebenmichael/augsynth}
 
 \end{frame}
+
+
+\section{Multiple Treated Units and Staggered}
+
+\subsection{Matrix completion with nuclear norm}
+
+\begin{frame}{Big idea}
+
+\begin{quote}
+``The main part of the article is about the statistical problem of imputing the missing values of $Y$.  Once these are imputed, we can estimate the causal effect of interest, $\delta$.''
+\end{quote}
+
+\bigskip
+
+\begin{quote}
+``To estimate average causal effect of the treatment on the treated units, we impute the missing potential control outcomes'' -- Athey, et al. (2021)
+\end{quote}
+
+
+\end{frame}
+
+\begin{frame}{Overview}
+
+\begin{itemize}
+\item Athey, et al. (2021) unites two literatures -- unconfoundedness and synthetic control
+\item Combines computer science with statistics to create the matrix completion with nuclear norm (MCNN) estimator
+\item Nuclear norm regularization is used for the imputation
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{What is matrix completion}
+
+\begin{itemize}
+\item Completing a matrix means guessing at the correct values that are missing 
+\item Hence the ``completion'' is just another name for ``filling in'' the matrix 
+\item In causal inference, if the matrix is a matrix of potential outcomes (e.g., $Y^0$), then missingness is caused by treatment assignment
+\end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+
+
+Here's a matrix of potential outcomes, $Y^0$, representing units at time $t$ that had not been treated. 
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & Y^0_{1t} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & Y^0_{2t} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & Y^0_{it}
+\end{pmatrix}\]
+\end{center}
+
+Now imagine a treatment assignment, SUTVA, that flips treatment from 0 to 1 in the last period $t$:
+
+\begin{eqnarray*}
+Y=DY^1 + (1-D)Y^0
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}[plain]
+
+Ask yourself: why are there question marks in the last column? 
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & ? \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+Matrix completion seeks to do the following:
+
+
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+Matrix completion with nuclear norm will impute the last column using regularized regression:
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & \widehat{Y^0_{1t}} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & \widehat{Y^0_{2t}} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & \widehat{Y^0_{it}}
+\end{pmatrix}\]
+\end{center}
+
+And once you have those, you can calculate individual level treatment effects that can be used to aggregate to the ATT
+
+\end{frame}
+
+
+\begin{frame}{History of matrix completion}
+
+\begin{itemize}
+\item Open competition by Netflix in 2006 -- winner would get \$1m if they could improve predictive model by ten points on RMSE
+\item Invited a ton of competition -- from MIT teams to regular everyday joes working out of their home office
+\item Everyone was given a database which was then tested by Netflix on a holdout dataset
+\item Quick progress was made followed by very slow advances
+\item Winner was announced in 2009
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Netflix prize}
+
+\begin{itemize}
+\item Gigantic sparsely populated matrix (100m users ranking 100k movies)
+\item I like \underline{Silver Linings Playbook} and \underline{Lars and the Real Girl} and you like \underline{Silver Linings Playbook}
+\item Probably you'll also like \underline {Lars and the Real Girl}
+\item So we are using correlations in the columns to ``complete'' missing values
+\item When you think about it, while it seems predictive (and it is), isn't it really a causal design?
+\item ``If I watch \underline{Lars and the Real Girl}, will I like it?''
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Types of imputation}
+
+\begin{itemize}
+\item I didn't always think of causal inference in terms of imputation because often the method was just taking existing values and manipulating them, rather than filling in missing values
+\item But the fundamental problem of causal inference states that causal inference is a missing data problem, so it makes sense you'd be imputing
+\item I tend to think therefore in terms of implicit and explicit imputation methods
+\item Borusyak, et al. (2021) and Athey, et al. (2021) both seem more like ``explicit'' imputation methods
+\item Callaway and Sant'Anna (2020) on the other hand is an implicit method, as is did methods more generally
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Two literatures}
+
+\begin{itemize}
+\item Lots of moving parts in this interesting paper, so my goal here is purely explainer and mostly high level at that. 
+\item I want you to be competent and conversant in it so we also have some R code
+\item There's two literatures they want you to have in your mind:
+	\begin{enumerate}
+	\item Unconfoundedness -- $(Y^0,Y^1)\independent D|X$ -- sometimes explicitly imputes (nearest neighbor), sometimes more implicit (inverse probability weighting)
+	\item Synthetic control -- literally calculating a counterfactual as a weighted average over all donor pool units
+	\end{enumerate}
+\item Their MCNN method will show that both are ``nested'' within the general framework they've developed making them actually special cases
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Differences}
+
+\begin{itemize}
+\item Conceptually different in the way they exploit patterns for causal inference
+\item Unconfoundedness assumes that \textbf{patterns over time}are stable \emph{across units}
+\item Synth assumes \textbf{patterns across units} are stable \emph{over time}
+\item Regularization nests them both
+\item Nuclear norm ensures a low rank matrix needed for sensible imputations
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{The Gist}
+
+\begin{itemize}
+\item Factor models and interactive effects model the observed outcome as the sum of a linear function of covariates and a unobserved component that is a low rank matrix plus noise
+\item Estimates are typically based on minimizing the sum of squared errors given the rank of the matrix of unobserved components with the rank itself estimated
+\item Nuclear norm regularization will be used for imputing the potential outcomes, $Y^0$, for all treated units
+\item Estimate plots and overall ATT using the estimated treatment effects
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Three contributions}
+
+\begin{enumerate}
+\item Formal results for non-random missingness when block structure allows for correlation over time.  Nuclear norm is important here
+\item Shows unconfoundedness and synth are in fact matrix completion methods 
+	\begin{itemize} 
+	\item they all have the same objective function based on the Frobenius norm for the difference between the latent matrix and the observed matrix
+	\item Each approach imposes different sets of restrictions on the factors in the matrix factorization
+	\item MCNN by contrast doesn't impose any restrictions -- just regularization to characterize the estimator
+	\end{itemize}
+\item Applies the method to two datasets, but I'm going to skip it though for now
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}{Block structure}
+
+\begin{itemize}
+\item Lots of jargon in this article -- unconfoundedness, vertical and horizontal regression, fat and thin matrices.  
+\item Unfortunately, you need to learn it all so let me try and organize it
+\item We define the matrix first in terms of its block structure which is describing where and when the missingness is occurring in the matrix
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Unconfoundedness}
+
+\begin{itemize}
+\item Much of the unconfoundedness literature estimates an ATE under unconfoundedness 
+\item But it tends to focus only on a simple setup where the missingness is the last period
+\item Think about LaLonde (1986) -- NSW treats the workers, and then you don't observe $Y^0$ for the treated group in the \emph{last period}
+\item This is the ``single-treated-period block structure'' because only one \emph{period} is missing
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Single-treated-period block structure}
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & ? \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+\end{frame}
+
+
+\begin{frame}{Single-treated-unit block structure}
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & Y^0_{1t} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & Y^0_{2t}  \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & ? & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+Notice, this is the synthetic control design because a single unit (unit $i$) is missing $Y^0$ for the 3rd and $t$th periods.
+
+\end{frame}
+
+\begin{frame}{Staggered adoption}
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & ? & ? & \dots  & ? \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & ? & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+So all of these so-called designs can be expressed in terms of missingness in the block structure, and our job therefore is to find an estimator that is general enough to manage all of them.  Their MCNN will be that.
+
+\end{frame}
+
+
+\begin{frame}{Thin and Fat matrices}
+
+\begin{itemize}
+\item We also have to consider the relative number of panel units $N$ and time periods $T$ because this also shapes which regression style will be used for imputation
+\item Thin matrices are basically where $N>>T$, but fat matrices are ones where $T>>N$
+\item Approximately square ones are where $T$ is approximately equal to $N$
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Vertical and horizontal regression}
+
+\begin{itemize}
+\item Two special combinations of missing data patterns and matrix shape need special attention because they are the focus of large but separate literatures
+\item Unconfoundedness has that single-treated period block structure with a thin matrix ($N>>T$). 
+\item You use a large number of units and impute missing potential outcomes in the last period using controls with similar lagged outcomes
+\item This is the horizontal regression -- imagine just running OLS on the lags and taking predicted values
+\item The horizontal regression holds under unconfoundedness
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Vertical regression}
+
+Doudchenko and Imbens (2016) and Pinto and Furman (2019) show that Abadie, Diamond and Hainmueller (2011) can be interpreted as regressing the outcomes for the treated prior to treatment on the outcomes for controls in the same period
+
+\end{frame}
+
+\begin{frame}{Fixed effects and factor models}
+
+\begin{itemize}
+\item Both horizontal and vertical regressions exploit other patterns
+\item An alternative to each of them though is to consider an approach that allows for the exploitation of both stable patterns over time and stable patterns across units
+\item This is where their matrix completion with nearest neighbor model comes in -- it does that very thing
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Matrix completion with nuclear norm}
+
+\begin{itemize}
+\item Model the $N \times T$ matrix of complete outcomes data matrix $Y$ as: $$Y = L* + e$$where $E[e|L*]=0$
+\item The error term can be thought of as measurement error if you need a frame to think about it
+\item So you have this complete matrix, L*, and zero mean conditional independence holds
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Assumption 1}
+
+Apart from the unconfoundedness assumption, we have this weird assumption!
+
+\begin{block}{Assumption 1}
+$e$ is independent of $L*$ and the elements of $e$ are $\sigma$-sub-Gaussian and independent of each other
+\end{block}
+
+Lots of matrix forms can be defined this way.  But let's not get lost in the weeds -- we are still just trying to estimate $L*$!  That's the main storyline, not the side quest, to use Red Dead Redemption words I understand
+
+\end{frame}
+
+\begin{frame}{All imputations are wrong but some are useful}	
+	
+\begin{itemize}
+\item You can impute something a million different ways.  
+\item $1+1+1+1 = 4$ is an imputation of the fifth unknown element and frankly just looking at it, seems wrong.
+\item You could minimize the sum of squared differences but if the objective function doesn't depend on $L*$, the estimator would just spit back $Y$ and $\delta=0$. 
+\item They add a penalty term $||\lambda||$ to the objective function, but even then, not all of them do well. 
+\item Turns out, it actually matters whether you regularize the fixed effects or not (just like it matters whether you regularize the constant in LASSO apparently -- I decided to take their word for it)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Estimator}
+
+\begin{eqnarray*}
+L* = \widehat{L} + \widehat{\Gamma}1_T^T + I_N\widehat{\Delta}^T
+\end{eqnarray*}where the objective function is:
+
+\begin{eqnarray*}
+= arg\text{ }min_{L,\Gamma,\Delta} \bigg \{ \frac{1}{O} || P_0(Y-L-\Gamma 1_T^T - 1_N\Delta^T)||_F^2 + \Lambda||L|| \bigg \}
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}{Fixed effects and regularization}
+
+\begin{itemize}
+\item The penalty will likely be the nuclear norm but notice that the fixed effects are outside the penalty term.  You could subsume them into $L$, they say, but they recommend you not doing this.
+\item Fraction of observations is relatively high and so the fixed effects can actually be estimated separately (apparently that is one difference between MCNN and the rest of the MC literature)
+\item The penalty will be chosen using cross-validation
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Other norms}
+
+\begin{itemize}
+\item One thing I thought was interesting was that the nuclear norm allowed for the construction of a low rank $L*$ matrix, but other norms actually would have weird properties
+\item I remember once me asking Imbens (like I had even a clue what I was talking about), ``Why not use elastic net?  Why are you using the nuclear norm?'' He said elastic net would spit out all zeroes.  I remember thinking ``Why did I think I would understand what he told me?''
+\item One advantage of NN is its fast and convex optimization programs will do it, whereas some others won't because of the large $N$ or $T$ issues
+\item There's almost like a cross walk, too, between this and Borusyak, et al. (2021) but I don't quite see it except they both leverage imputation
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Conclusion}
+
+\begin{itemize}
+\item Ultimately, this is just another model though that can be used for differential timing but at the moment, no one knows how it performs in simulations alongside Borusyak, et al. (2021), Callaway and Sant'Anna (2020) or any of the others
+\item So I can't really answer questions about when to use it and not to -- it comes down to these very narrow assumptions
+\item You choose the estimator based on the problem you're studying and the assumptions -- you must justify it, no one else can, but you do so by appealing to assumptions
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Code}
+
+R: \url{https://github.com/xuyiqing/gsynth}
+
+\bigskip
+
+Stata: fect \url{https://yiqingxu.org/packages/fect/stata/fect_md.html}
+
+\end{frame}
+
+
+
+
 
 \subsection{Synthetic difference-in-differences}
 
@@ -2364,387 +2776,6 @@ Number of observations  & & 57,470 & & & 630 & & & 56,840 & \\ \bottomrule\botto
 
 
 
-\subsection{Matrix completion with nuclear norm}
-
-\begin{frame}{Big idea}
-
-\begin{quote}
-``The main part of the article is about the statistical problem of imputing the missing values of $Y$.  Once these are imputed, we can estimate the causal effect of interest, $\delta$.''
-\end{quote}
-
-\bigskip
-
-\begin{quote}
-``To estimate average causal effect of the treatment on the treated units, we impute the missing potential control outcomes'' -- Athey, et al. (2021)
-\end{quote}
-
-
-\end{frame}
-
-\begin{frame}{Overview}
-
-\begin{itemize}
-\item Athey, et al. (2021) unites two literatures -- unconfoundedness and synthetic control
-\item Combines computer science with statistics to create the matrix completion with nuclear norm (MCNN) estimator
-\item Nuclear norm regularization is used for the imputation
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{What is matrix completion}
-
-\begin{itemize}
-\item Completing a matrix means guessing at the correct values that are missing 
-\item Hence the ``completion'' is just another name for ``filling in'' the matrix 
-\item In causal inference, if the matrix is a matrix of potential outcomes (e.g., $Y^0$), then missingness is caused by treatment assignment
-\end{itemize}
-\end{frame}
-
-\begin{frame}[plain]
-
-
-Here's a matrix of potential outcomes, $Y^0$, representing units at time $t$ that had not been treated. 
-\begin{center}
-\[ Y^0_{it}  =\begin{pmatrix}
-    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & Y^0_{1t} \\
-    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & Y^0_{2t} \\
-    \vdots & \vdots & \vdots & \ddots & \vdots \\
-    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & Y^0_{it}
-\end{pmatrix}\]
-\end{center}
-
-Now imagine a treatment assignment, SUTVA, that flips treatment from 0 to 1 in the last period $t$:
-
-\begin{eqnarray*}
-Y=DY^1 + (1-D)Y^0
-\end{eqnarray*}
-
-\end{frame}
-
-\begin{frame}[plain]
-
-Ask yourself: why are there question marks in the last column? 
-
-\begin{center}
-\[ Y^0_{it}  =\begin{pmatrix}
-    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & ? \\
-    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
-    \vdots & \vdots & \vdots & \ddots & \vdots \\
-    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & ?
-\end{pmatrix}\]
-\end{center}
-Matrix completion seeks to do the following:
-
-
-
-\end{frame}
-
-
-\begin{frame}[plain]
-
-Matrix completion with nuclear norm will impute the last column using regularized regression:
-
-\begin{center}
-\[ Y^0_{it}  =\begin{pmatrix}
-    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & \widehat{Y^0_{1t}} \\
-    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & \widehat{Y^0_{2t}} \\
-    \vdots & \vdots & \vdots & \ddots & \vdots \\
-    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & \widehat{Y^0_{it}}
-\end{pmatrix}\]
-\end{center}
-
-And once you have those, you can calculate individual level treatment effects that can be used to aggregate to the ATT
-
-\end{frame}
-
-
-\begin{frame}{History of matrix completion}
-
-\begin{itemize}
-\item Open competition by Netflix in 2006 -- winner would get \$1m if they could improve predictive model by ten points on RMSE
-\item Invited a ton of competition -- from MIT teams to regular everyday joes working out of their home office
-\item Everyone was given a database which was then tested by Netflix on a holdout dataset
-\item Quick progress was made followed by very slow advances
-\item Winner was announced in 2009
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Netflix prize}
-
-\begin{itemize}
-\item Gigantic sparsely populated matrix (100m users ranking 100k movies)
-\item I like \underline{Silver Linings Playbook} and \underline{Lars and the Real Girl} and you like \underline{Silver Linings Playbook}
-\item Probably you'll also like \underline {Lars and the Real Girl}
-\item So we are using correlations in the columns to ``complete'' missing values
-\item When you think about it, while it seems predictive (and it is), isn't it really a causal design?
-\item ``If I watch \underline{Lars and the Real Girl}, will I like it?''
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Types of imputation}
-
-\begin{itemize}
-\item I didn't always think of causal inference in terms of imputation because often the method was just taking existing values and manipulating them, rather than filling in missing values
-\item But the fundamental problem of causal inference states that causal inference is a missing data problem, so it makes sense you'd be imputing
-\item I tend to think therefore in terms of implicit and explicit imputation methods
-\item Borusyak, et al. (2021) and Athey, et al. (2021) both seem more like ``explicit'' imputation methods
-\item Callaway and Sant'Anna (2020) on the other hand is an implicit method, as is did methods more generally
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Two literatures}
-
-\begin{itemize}
-\item Lots of moving parts in this interesting paper, so my goal here is purely explainer and mostly high level at that. 
-\item I want you to be competent and conversant in it so we also have some R code
-\item There's two literatures they want you to have in your mind:
-	\begin{enumerate}
-	\item Unconfoundedness -- $(Y^0,Y^1)\independent D|X$ -- sometimes explicitly imputes (nearest neighbor), sometimes more implicit (inverse probability weighting)
-	\item Synthetic control -- literally calculating a counterfactual as a weighted average over all donor pool units
-	\end{enumerate}
-\item Their MCNN method will show that both are ``nested'' within the general framework they've developed making them actually special cases
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{Differences}
-
-\begin{itemize}
-\item Conceptually different in the way they exploit patterns for causal inference
-\item Unconfoundedness assumes that \textbf{patterns over time}are stable \emph{across units}
-\item Synth assumes \textbf{patterns across units} are stable \emph{over time}
-\item Regularization nests them both
-\item Nuclear norm ensures a low rank matrix needed for sensible imputations
-
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{The Gist}
-
-\begin{itemize}
-\item Factor models and interactive effects model the observed outcome as the sum of a linear function of covariates and a unobserved component that is a low rank matrix plus noise
-\item Estimates are typically based on minimizing the sum of squared errors given the rank of the matrix of unobserved components with the rank itself estimated
-\item Nuclear norm regularization will be used for imputing the potential outcomes, $Y^0$, for all treated units
-\item Estimate plots and overall ATT using the estimated treatment effects
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Three contributions}
-
-\begin{enumerate}
-\item Formal results for non-random missingness when block structure allows for correlation over time.  Nuclear norm is important here
-\item Shows unconfoundedness and synth are in fact matrix completion methods 
-	\begin{itemize} 
-	\item they all have the same objective function based on the Frobenius norm for the difference between the latent matrix and the observed matrix
-	\item Each approach imposes different sets of restrictions on the factors in the matrix factorization
-	\item MCNN by contrast doesn't impose any restrictions -- just regularization to characterize the estimator
-	\end{itemize}
-\item Applies the method to two datasets, but I'm going to skip it though for now
-\end{enumerate}
-
-\end{frame}
-
-
-\begin{frame}{Block structure}
-
-\begin{itemize}
-\item Lots of jargon in this article -- unconfoundedness, vertical and horizontal regression, fat and thin matrices.  
-\item Unfortunately, you need to learn it all so let me try and organize it
-\item We define the matrix first in terms of its block structure which is describing where and when the missingness is occurring in the matrix
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Unconfoundedness}
-
-\begin{itemize}
-\item Much of the unconfoundedness literature estimates an ATE under unconfoundedness 
-\item But it tends to focus only on a simple setup where the missingness is the last period
-\item Think about LaLonde (1986) -- NSW treats the workers, and then you don't observe $Y^0$ for the treated group in the \emph{last period}
-\item This is the ``single-treated-period block structure'' because only one \emph{period} is missing
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Single-treated-period block structure}
-
-\begin{center}
-\[ Y^0_{it}  =\begin{pmatrix}
-    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & ? \\
-    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
-    \vdots & \vdots & \vdots & \ddots & \vdots \\
-    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & ?
-\end{pmatrix}\]
-\end{center}
-
-\end{frame}
-
-
-\begin{frame}{Single-treated-unit block structure}
-
-\begin{center}
-\[ Y^0_{it}  =\begin{pmatrix}
-    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & Y^0_{1t} \\
-    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & Y^0_{2t}  \\
-    \vdots & \vdots & \vdots & \ddots & \vdots \\
-    Y^0_{i1} & Y^0_{i2} & ? & \dots  & ?
-\end{pmatrix}\]
-\end{center}
-
-Notice, this is the synthetic control design because a single unit (unit $i$) is missing $Y^0$ for the 3rd and $t$th periods.
-
-\end{frame}
-
-\begin{frame}{Staggered adoption}
-
-\begin{center}
-\[ Y^0_{it}  =\begin{pmatrix}
-    Y^0_{11} & ? & ? & \dots  & ? \\
-    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
-    \vdots & \vdots & \vdots & \ddots & \vdots \\
-    Y^0_{i1} & Y^0_{i2} & ? & \dots  & ?
-\end{pmatrix}\]
-\end{center}
-
-So all of these so-called designs can be expressed in terms of missingness in the block structure, and our job therefore is to find an estimator that is general enough to manage all of them.  Their MCNN will be that.
-
-\end{frame}
-
-
-\begin{frame}{Thin and Fat matrices}
-
-\begin{itemize}
-\item We also have to consider the relative number of panel units $N$ and time periods $T$ because this also shapes which regression style will be used for imputation
-\item Thin matrices are basically where $N>>T$, but fat matrices are ones where $T>>N$
-\item Approximately square ones are where $T$ is approximately equal to $N$
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{Vertical and horizontal regression}
-
-\begin{itemize}
-\item Two special combinations of missing data patterns and matrix shape need special attention because they are the focus of large but separate literatures
-\item Unconfoundedness has that single-treated period block structure with a thin matrix ($N>>T$). 
-\item You use a large number of units and impute missing potential outcomes in the last period using controls with similar lagged outcomes
-\item This is the horizontal regression -- imagine just running OLS on the lags and taking predicted values
-\item The horizontal regression holds under unconfoundedness
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Vertical regression}
-
-Doudchenko and Imbens (2016) and Pinto and Furman (2019) show that Abadie, Diamond and Hainmueller (2011) can be interpreted as regressing the outcomes for the treated prior to treatment on the outcomes for controls in the same period
-
-\end{frame}
-
-\begin{frame}{Fixed effects and factor models}
-
-\begin{itemize}
-\item Both horizontal and vertical regressions exploit other patterns
-\item An alternative to each of them though is to consider an approach that allows for the exploitation of both stable patterns over time and stable patterns across units
-\item This is where their matrix completion with nearest neighbor model comes in -- it does that very thing
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Matrix completion with nuclear norm}
-
-\begin{itemize}
-\item Model the $N \times T$ matrix of complete outcomes data matrix $Y$ as: $$Y = L* + e$$where $E[e|L*]=0$
-\item The error term can be thought of as measurement error if you need a frame to think about it
-\item So you have this complete matrix, L*, and zero mean conditional independence holds
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Assumption 1}
-
-Apart from the unconfoundedness assumption, we have this weird assumption!
-
-\begin{block}{Assumption 1}
-$e$ is independent of $L*$ and the elements of $e$ are $\sigma$-sub-Gaussian and independent of each other
-\end{block}
-
-Lots of matrix forms can be defined this way.  But let's not get lost in the weeds -- we are still just trying to estimate $L*$!  That's the main storyline, not the side quest, to use Red Dead Redemption words I understand
-
-\end{frame}
-
-\begin{frame}{All imputations are wrong but some are useful}	
-	
-\begin{itemize}
-\item You can impute something a million different ways.  
-\item $1+1+1+1 = 4$ is an imputation of the fifth unknown element and frankly just looking at it, seems wrong.
-\item You could minimize the sum of squared differences but if the objective function doesn't depend on $L*$, the estimator would just spit back $Y$ and $\delta=0$. 
-\item They add a penalty term $||\lambda||$ to the objective function, but even then, not all of them do well. 
-\item Turns out, it actually matters whether you regularize the fixed effects or not (just like it matters whether you regularize the constant in LASSO apparently -- I decided to take their word for it)
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Estimator}
-
-\begin{eqnarray*}
-L* = \widehat{L} + \widehat{\Gamma}1_T^T + I_N\widehat{\Delta}^T
-\end{eqnarray*}where the objective function is:
-
-\begin{eqnarray*}
-= arg\text{ }min_{L,\Gamma,\Delta} \bigg \{ \frac{1}{O} || P_0(Y-L-\Gamma 1_T^T - 1_N\Delta^T)||_F^2 + \Lambda||L|| \bigg \}
-\end{eqnarray*}
-
-\end{frame}
-
-\begin{frame}{Fixed effects and regularization}
-
-\begin{itemize}
-\item The penalty will likely be the nuclear norm but notice that the fixed effects are outside the penalty term.  You could subsume them into $L$, they say, but they recommend you not doing this.
-\item Fraction of observations is relatively high and so the fixed effects can actually be estimated separately (apparently that is one difference between MCNN and the rest of the MC literature)
-\item The penalty will be chosen using cross-validation
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Other norms}
-
-\begin{itemize}
-\item One thing I thought was interesting was that the nuclear norm allowed for the construction of a low rank $L*$ matrix, but other norms actually would have weird properties
-\item I remember once me asking Imbens (like I had even a clue what I was talking about), ``Why not use elastic net?  Why are you using the nuclear norm?'' He said elastic net would spit out all zeroes.  I remember thinking ``Why did I think I would understand what he told me?''
-\item One advantage of NN is its fast and convex optimization programs will do it, whereas some others won't because of the large $N$ or $T$ issues
-\item There's almost like a cross walk, too, between this and Borusyak, et al. (2021) but I don't quite see it except they both leverage imputation
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Conclusion}
-
-\begin{itemize}
-\item Ultimately, this is just another model though that can be used for differential timing but at the moment, no one knows how it performs in simulations alongside Borusyak, et al. (2021), Callaway and Sant'Anna (2020) or any of the others
-\item So I can't really answer questions about when to use it and not to -- it comes down to these very narrow assumptions
-\item You choose the estimator based on the problem you're studying and the assumptions -- you must justify it, no one else can, but you do so by appealing to assumptions
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Code}
-
-R: \url{https://github.com/xuyiqing/gsynth}
-
-\bigskip
-
-Stata: ??
-
-\end{frame}
-
-
-
-
 
 \subsection{Augmented Synthetic Control with Staggered Rollout}
 
@@ -3067,7 +3098,7 @@ Treatment effect estimate is \textbf{weighted diff-in-diff}:
 
 
 
-\subsection{Event studies in finance}
+\section{Bonus: Event studies in finance}
 
 \begin{frame}{Possibilities for detecting corruption}
 
