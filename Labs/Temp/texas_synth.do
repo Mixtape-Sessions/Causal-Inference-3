@@ -16,7 +16,6 @@ capture log using ./texas.log, replace text
 * Estimation 1: Texas model of black male prisoners (per capita)
 use ../data/texas.dta, replace
 
-
 #delimit;
 
 synth 	bmprison 
@@ -45,7 +44,7 @@ rename _Y_treated  treat
 rename _Y_synthetic counterfact
 gen gap48=treat-counterfact
 sort year 
-twoway (line gap48 year,lp(solid)lw(vthin)lcolor(black)), yline(0, lpattern(shortdash) lcolor(black)) xline(1993, lpattern(shortdash) lcolor(black)) xtitle("",si(medsmall)) xlabel(#10) ytitle("Gap in black male prisoner prediction error", size(medsmall)) legend(off)
+twoway (line gap48 year,lp(solid)lw(thick)lcolor(black)), yline(0, lpattern(shortdash) lcolor(black)) xline(1993, lpattern(shortdash) lcolor(black)) xtitle("",si(medsmall)) xlabel(#10) ytitle("Gap in black male prisoner prediction error", size(medsmall)) legend(off)
 save ../data/synth/synth_bmprate_48.dta, replace
 
 
@@ -213,7 +212,7 @@ xtitle("",si(small)) xlabel(#10) ytitle("Gap in black male prisoners per capita 
 
 graph save Graph ../Figures/synth_placebo_bmprate.gph, replace
 
-* Drop the outliers (RMSPE is 5 times more than Texas: drops 11, 28, 32, 33, and 41)
+* Drop the outliers (RMSPE is 5 times more than Texas: drops 6, 11, 28, 32, 33, and 41)
 * Picture of the full sample, including outlier RSMPE
 #delimit;	
 
