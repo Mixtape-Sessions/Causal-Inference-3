@@ -1254,7 +1254,7 @@ Only units that are alike in observables and unobservables should produce simila
 \begin{frame}{Slight change in synth notation}
 
 \begin{itemize}
-\item Assume that our outcome, $Y_{jt}$, follows a factor model where $m(.)$ are pre-treatment outcomes: $$ Y_{jt}^0 = m_{jt} + \varepsilon_{jt}$$
+\item Assume that our outcome, $Y^0_{jt}$, follows a factor model where $m(.)$ are pre-treatment potential outcomes: $$ Y_{jt}^0 = m_{jt} + \varepsilon_{jt}$$
 \item Since $\widehat{m(.)}$ estimates the post-treatment outcome, it can be viewed as an estimate of matching bias
 \item Procedure then becomes analogous to bias correction for inexact matching (Abadie and Imbens 2011)
 \end{itemize}
@@ -3201,13 +3201,35 @@ Finally, we obtain generally good performance from specifications that use a cro
 
 \section{Concluding remarks}
 
+
+\begin{frame}{Abadie on the value and use of synthetic control}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/abadie_quote.png}
+	\end{figure}
+
+\end{frame}
+
+
 \begin{frame}{Summarizing}
 
+
 \begin{itemize}
-\item Randomized treatments are great but not always available 
-\item Causal inference methods can utilize naturally occurring variation, but still must make adequate adjustments to find suitable controls
-\item Synthetic control and recent work on event studies can be possibilities
-\item Thank you!
+
+\item Synthetic control was developed for the comparative case study; it is a kind of matching estimator with an underlying factor model for its identification (not parallel trends)
+\item Advancements have been made along multiple dimensions -- bias adjustments, demeaning, as well as exploring more general structures than just factor models
+\item It is now a more robust, general causal panel method but the assumptions needed to justify it need "due diligence" 
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Closing remark}
+
+\begin{itemize}
+\item Focus on the treatment assignment mechanisms carefully to help understand how unobserved time varying confounders may be threatening your results, pay close attention to issues around observable matching bias, remember the importance of the "long panel"
+\item Extrapolation based on the negative weighting should be done with the idea of bias reduction (augmented ridge), not simply for the purpose of fitting
+\item Good luck!
 
 \end{itemize}
 

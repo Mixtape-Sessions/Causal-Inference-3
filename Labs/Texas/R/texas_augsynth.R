@@ -19,7 +19,10 @@ syn <- augsynth(
 )
 
 summary(syn)
+list(syn$weights)
+
 # compute point-wise confidence intervals using the Jackknife+ procedure
+plot(syn)
 plot(syn, inf_type = "jackknife+")
 
 # Augmented Synthetic Controls - No covariate ----------------------------------
@@ -40,7 +43,7 @@ plot(syn_tx, inf_type = "jackknife+")
 # Augmented Synthetic Controls - With covariates -------------------------------
 augsynth_tx <- augsynth(
   # covariates are put behind vertical bar |
-  bmprison ~ treated | poverty + income + alcohol + aidscapita + black + perc1519, 
+  bmprison ~ treated | poverty + income + alcohol + aidscapita + black, 
   unit = statefip, time = year, data = texas, 
   progfunc = "ridge", scm = T 
 )
