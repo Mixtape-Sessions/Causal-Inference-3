@@ -42,6 +42,7 @@ sdid bmprison statefip year treated, vce(placebo) reps(100) seed(123)
     g2_opt(ylabel(0(10000)75000) xlabel(1985(5)2000) ytitle("Packs per capita") 
     xtitle("") scheme(plotplainblind))
 	graph_export(sdid_, .png);
+	
 #delimit cr
 
 
