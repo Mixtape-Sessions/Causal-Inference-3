@@ -121,7 +121,7 @@ ta 		time_til, gen(dd)
 
 * Matrix completion
 
-quietly fect y, treat(treat) unit(id) time(year) method("mc") nlambda(10) se nboots(1000) 
+quietly fect y, treat(treat) unit(id) time(year) method("mc") nlambda(10) se nboots(100) 
 
 quietly mat b=e(ATT)
 quietly local mcnn = b[1,1]
