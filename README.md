@@ -1,4 +1,4 @@
-<img src="img/banner.png" alt="Mixtape Sessions Banner" width="100%"> 
+<img src="https://raw.githubusercontent.com/Mixtape-Sessions/Causal-Inference-3/main/img/banner.png" alt="Mixtape Sessions Banner" width="100%"> 
 
 ## About
 
