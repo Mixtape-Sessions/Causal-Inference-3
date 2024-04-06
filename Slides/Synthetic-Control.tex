@@ -87,7 +87,6 @@
 \end{frame}
 
 
-\subsection{Managing your expectations}
 
 \begin{frame}{Class goals}
 
@@ -137,7 +136,38 @@
 
 \end{frame}
 
-\subsection{Potential outcomes review}
+\subsection{Warranted Beliefs and Causal Inference}
+
+\begin{frame}
+\frametitle{Warranted Belief and Causal Inference}
+\begin{itemize}
+  \item Warranted belief, a phrase from philosophy, is like a bridge connecting true belief to knowledge 
+  \item In causal inference, think of it as ``good reasons'' to believe in our estimations of causal effects.
+  \item But the potential outcomes framework highlights the epistemic challenge of this enterprise caused by unobserved ``counterfactuals''
+  \item Randomized Controlled Trials (RCTs) offer strong warrants by closely approximating counterfactual scenarios by minimizing confounders allowing us to one group for another.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{RCTs, Warrants, and Epistemic Humility}
+\begin{itemize}
+  \item Our beliefs about causal effects are probabilistic, rooted in the integrity of our assumptions.
+  \item This approach reflects an epistemic humility, acknowledging our methods' limitations.
+  \item Continuous inquiry and evidence accumulation inch us closer to true knowledge.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Epistemic Value of Quasi-Experimental Designs}
+\begin{itemize}
+  \item Not all quasi-experimental designs are equal in their epistemic contribution.
+  \item Well-executed propensity score studies may approach closer to knowledge than poorly designed RCTs.
+  \item Synthetic control methods offer a pathway to robust knowledge, with varying degrees of effectiveness.
+  \item This workshop aims to refine our use of synthetic control towards stronger warrants of knowledge.
+\end{itemize}
+\end{frame}
+
+
 
 \begin{frame}{Causal Inference vs Prediction}
   \centering
@@ -166,6 +196,7 @@
 \end{frame}
 
 
+\subsection{Potential outcomes review}
 
 
 \begin{frame}{Potential outcomes history}
@@ -238,6 +269,18 @@ This is one of the most important policy parameters, if not the most important, 
 
 \subsection{Original synthetic control method}
 
+\begin{frame}{First outline}
+
+\begin{enumerate}
+\item \textbf{Abadie's synth}: We will start here as the foundation, understand it inside and out, practice with it, and try to learn good practices, as well as its bias
+\item \textbf{Demeaned synth}: Early modification by Bruno Ferman and Chris Pinto addressing the bias of synth in greater detail, and offering solutions
+\item \textbf{Augmented synth}: Further modifications of the biased synth, draws on earlier work by Abadie and Imbens (2011) in matching (bias correction)
+\end{enumerate}
+
+\end{frame}
+
+
+
 
 \begin{frame}[plain]
 	\begin{figure}
@@ -245,12 +288,43 @@ This is one of the most important policy parameters, if not the most important, 
 	\end{figure}
 \end{frame}
 
-\begin{frame}{What is synthetic control}
+\begin{frame}{History of synthetic control}
+
+ 
+``The Economic Costs of Conflict: A Case Study of Basque Country'' (2003) by Alberto Abadie and Javier Gardeazabal, \emph{American Economic Review} (see /Readings at Github Repo)
+
+\bigskip
+\footnotesize
+\begin{quote} ``About synthetic controls: I had played with related notions for some time, thinking about panel data methods to measure the effects of aggregate interventions. But the idea of synthetic controls shaped up in my mind with the Basque Country example. As always, taking vague concepts to data helps. There wasn’t much one could do in terms of DD for the Basque example. When I saw what is now Figure 1 in the Basque paper appearing on my computer screen after the code finished running for the first time, the value of the method became immediately clear.''
+\end{quote}
+
+
+\end{frame}
+
+
+\begin{frame}{}
+
+\begin{figure}
+\includegraphics[scale=0.5]{./lecture_includes/basque_figure1}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Synth in Abadie's own words}
+
+Approximately 5 minutes
+
+\url{https://youtu.be/19cRm8aKF-I?si=dD13K60RjTt6E4EF&t=265}
+
+\end{frame}
+
+\begin{frame}{So what is this thing called synthetic control}
 	
 	\begin{itemize}
 	\item Synthetic control has been called the most important innovation in causal inference of the last two decades by Athey and Imbens (2017)
 	\item Originally designed for comparative case studies, but ongoing developments have extended it to multiple treated units, differential timing, bias adjustment and even modifications to difference-in-differences
-	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and we will try to build a ramp up to that frontier starting with the first method by Alberto Abadie and coauthors in 2003 and 2010
+	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and modifications continue all the time
+	\item Many will move to synthetic control after throwing in the towel on Diff-in-Diff -- \emph{but why?}
 	\end{itemize}
 \end{frame}
 	
@@ -291,7 +365,7 @@ This is one of the most important policy parameters, if not the most important, 
 
 \end{frame}
 
-\begin{frame}{Pros and cons}
+\begin{frame}{Pros of the traditional comparative case study}
 	Pros:
 
 		\begin{itemize}
@@ -300,7 +374,7 @@ This is one of the most important policy parameters, if not the most important, 
 		\end{itemize}
 \end{frame}
 
-\begin{frame}{Pros and cons}
+\begin{frame}{Cons of the traditional comparative case study}
 	Cons:
 
 		\begin{itemize}
@@ -405,6 +479,8 @@ This is one of the most important policy parameters, if not the most important, 
 
 \end{frame}
 
+
+
 \begin{frame}{Synthetic control method: advantages}
 	
 	\begin{itemize}
@@ -463,6 +539,27 @@ Abadie, et al. consider $$||X_1 - X_0W||=\sqrt{(X_1-X_0W)'V(X_1-X_0W)}$$where $X
 
 \end{frame}
 
+\begin{frame}{Similarity to distance minimization}
+
+\begin{itemize}
+\item Bears some resemblance to nearest neighbor matching though I don't want to oversell that
+\item There is a unique solution that selects weighting minimizing the distance between the covariates comparison characteristics and treatment group
+\item Let's look at an example from nearest neighbor matching of minimizing Euclidean distance to help firm the ideas
+\item \url{https://docs.google.com/spreadsheets/d/1iro1Qzrr1eLDY_LJVzOYvnQZWmxY8JyTcDf6YcdhkwQ/edit?usp=sharing}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Illustration of the "optimal weight"}
+
+\begin{figure}
+\includegraphics[scale=0.25]{./lecture_includes/synth_optimal_weight}
+\end{figure}
+
+\end{frame}
+
+
+
 \begin{frame}{More on the V matrix}
 
 Typically, $V$ is diagonal with main diagonal $v_1, \dots, v_k$.  Then, the synthetic control weights $w_2^*, \dots, w_{J+1}^*$ minimize: $$\sum_{m=1}^k v_m \bigg(X_{1m} - \sum_{j=2}^{J+1}w_jX_{jm}\bigg)^2$$ where $v_m$ is a weight that reflects the relative importance that we assign to the $m$-th variable when we measure the discrepancy between the treated unit and the synthetic controls
@@ -493,10 +590,15 @@ Typically, $V$ is diagonal with main diagonal $v_1, \dots, v_k$.  Then, the synt
 \begin{frame}{Cross validation}
 
 \begin{itemize}
+		\item Abadie recommends cross validation for selecting the covariates
 		\item Divide the pre-treatment period into an initial \textbf{training} period and a subsequent \textbf{validation} period
 		\item For any given $V$, calculate $W^*(V)$ in the training period.
 		\item Minimize the MSPE of $W^*(V)$ in the validation period
 \end{itemize}
+
+\bigskip
+
+Let's look at an example from the 2010 JASA paper with Hainmueller and Diamond
 
 \end{frame}
 
@@ -606,7 +708,7 @@ Typically, $V$ is diagonal with main diagonal $v_1, \dots, v_k$.  Then, the synt
 
 
 
-\begin{frame}{Coding exercise}
+\begin{frame}{Replication exercise}
 	
 	\begin{itemize}
 	\item The US has the highest prison population of any OECD country in the world 
@@ -894,6 +996,7 @@ Suppose we found $W^*$ such that:
   \item Abadie, et al. 2010 shows the bounds on the bias and it is based on how closely you're able to fit the synthetic control to the treatment group over time
   \item Bias bound is controlled by a ratio between the scale of the transitory shocks, $\varepsilon_{it}$, and the time length
   \item Your credibility of a synthetic control depends on the extent to which it is able to fit a trajectory  $Y_{1t}$ for an extended pre-intervention period
+  \item The idea is that on the shorter series, you're fitting noise ($\varepsilon$) not the factor model
  \end{itemize}
  
  \end{frame}
@@ -981,6 +1084,15 @@ Suppose we found $W^*$ such that:
 \end{frame}
 
 
+\begin{frame}{}
+
+\begin{figure}
+\includegraphics[scale=0.25]{./lecture_includes/restud_dd}
+\end{figure}
+
+\end{frame}
+
+
 
 \begin{frame}{Demeaning to address bias}
 
@@ -1010,6 +1122,17 @@ Suppose we found $W^*$ such that:
 
 
 \subsection{Imperfect fit: Augmented Synthetic Control}
+
+\begin{frame}{More on imperfect fit}
+
+\begin{itemize}
+\item Ferman and Pinto start this literature on imperfect fit, but it continued
+\item Next we examine relaxing the convexity requirement
+\item There had been an earlier paper by Doudchenko and Imbens that was never published that tried to add a constant so you can be off the convex hull
+\item But this next one will use negative weights
+\end{itemize}
+
+\end{frame}
 
 \begin{frame}{Augmented Synthetic Control}
 \begin{itemize}
