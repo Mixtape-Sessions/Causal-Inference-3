@@ -2842,7 +2842,6 @@ Number of observations  & & 57,470 & & & 630 & & & 56,840 & \\ \bottomrule\botto
 \item They also report synth and DiD analysis as robustness -- something to keep in mind is the presentation of results are subjective
 \item Rather than showing regression results with more controls, we tend to now see different DiD and synth estimators as the robustness
 \item Authors fail to find strong evidence the vaccine mandates slowed COVID-19
-\item What's your response?
 
 \end{itemize}
 
@@ -2855,58 +2854,36 @@ Number of observations  & & 57,470 & & & 630 & & & 56,840 & \\ \bottomrule\botto
 
 \subsection{Augmented Synthetic Control with Staggered Rollout}
 
-\begin{frame}
+\begin{frame}{Staggered rollout and Synthetic Control}
 
 \begin{itemize}
-\item ADH was designed for a single treated unit, no extrapolation, non-negative weights summed to one
-\item Previous Ben-Michael, Feller and Rothstein (2021a) paper addressed imperfect fit in the pre-trends using regularization
-\item Ben-Michael, Feller and Rothstein (2021b) focus on the single unit by allowing differential timing
-	\begin{itemize}
-	\item Augmented synth is a double-robust style (or bias corrected) estimator
-	\item This synth is similar to ``shrunken''/empirical Bayes/random effects estimation
-	\end{itemize}
-\item It sort of fits with the newer differential timing papers, like matrix completion with nuclear norm regularization had, even though neither are technically DiD
-\item More machine learning regularization as we've been seeing
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Paper's Contribution}
-
-\begin{enumerate}
-	\item Extend synth to staggered adoption (as opposed to one unit)
-	\item Show results using an example of unions on spending
-	\item Propensity score weighting with shrinkage
-\end{enumerate}
-
-\end{frame}
-
-\begin{frame}{Motivation}
-
-
-Synthetic control is not a very good propensity score estimator
-\begin{itemize}
-\item Uses pre-treatment outcomes as covariates (some use other $X$ covariates)
-\item Small $N$ and large $K$ means propensity score must be regularized with probability approaching 1 so perfect balance is not achieved
-\item You can borrow information to reduce bias from imbalance -- for instance from an outcome model (e.g., a regression) and/or other treated units
-\item You can then combine to produced a weighted event study estimator
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Stepping back}
-
-\begin{itemize}
-\item A unit is treated at some period $t$ and we want to know that event's effect on $Y$
+\item Groups of units are treated, but they are treated at different time periods
 \item Standard approach is DiD and event studies
 	\begin{itemize}
-	\item Tons of papers recently (e.g., Goodman-Bacon 2021, Callaway and Sant'Anna 2020)
-	\item But what units all DiD papers is \emph{parallel trends}
+	\item Tons of papers recently (e.g., Callaway and Sant'Anna 2021; Sun and Abraham 2021; de Chaisemartin D'Haultfouielle 2020; Borusyak, et al. 2023)
+	\item Identifying assumption in all DiD papers is \emph{parallel trends}
 	\end{itemize}
-\item That assumption may be wrong, in which case the models' findings will be wrong
+\item When parallel trends is not viable, then ATT estimate is biased by a non-parallel trends bias term
+\item Synthetic control methods were updated to accomodated multiple treated groups
+
 \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}{Augmented Synth with Staggered Rollout}
+
+\begin{itemize}
+\item Synth was originally designed for a single treated unit, no extrapolation, non-negative weights summed to one
+\item Previous Ben-Michael, Feller and Rothstein (2021a) paper addressed imperfect fit in the pre-trends using bias correction and slightly negative weighting
+\item This new paper (Ben-Michael, Feller and Rothstein 2021b) focuses on multiple units by allowing differential timing
+\item It will fit with the newer diff-in-diff literature, but it should also fit with MCNN, though might be useful for someone to run a horse race
+\end{itemize}
+
+\end{frame}
+
+
+
 
 
 \begin{frame}{Synth with staggered adoption}
@@ -2914,26 +2891,15 @@ Synthetic control is not a very good propensity score estimator
 \begin{itemize}
 \item Synth was designed originally for the comparative case study -- i.e., one treatment group
 \item What do we do when there's more than one treatment group?
-\item People in the past tried different things
-	\begin{itemize}
-	\item If they were all treated at the same time, they'd average the treated units and construct a synthetic control for the average
-	\item If it was staggered, then they'd fit synth for each treated unit separately, then average those estimates
-	\end{itemize}
-\item They're going to propose optimizing a weighted average of the \emph{global balance} (for the average treated unit) and the sum of \emph{unit-specific balance} for each treated unit
+\item Core idea of the paper:  find a coherent way to manage multiple synthetic controls and aggregating them into a single parameter estimate
+\item Their working example will be a teacher union collective bargaining law and teacher salary study
 \end{itemize}
 
 \end{frame}
 
-\begin{frame}{Intuition}
 
-We want to balance the average of the underlying factor loadings
+\imageframe{./lecture_includes/augsynth_7.png}
 
-\begin{itemize}
-\item Balancing individual units may cause large imbalance in the average if errors all go in the same direction
-\item Balancing the average outcome may not balance factor loadings if imbalance for different treated units offset each other
-\end{itemize}
-
-\end{frame}
 
 
 \begin{frame}{Teacher unions and teacher salaries/spending}
@@ -2947,30 +2913,55 @@ Their application is about teacher unions
 	\item Hoxby (1996) finds increased spending by 12\%
 	\item Paglayan (2019) estimates precise zero in an event study model using ever-treated states
 	\end{itemize}
-\item They're going to re-analyze using all states and synth models
+\item Traditionally this was done using twoway fixed effects and event studies but these are known to have bias with heterogenous treatment effects (Goodman-Bacon 2021)
+\item They're going to re-analyze using all states and synth models and we can review it too using their code
 \end{itemize}
 
 \end{frame}
 
 
 
-\imageframe{./lecture_includes/augsynth_7.png}
 
-\begin{frame}{Their paper}
-
-\begin{enumerate}
-\item \textbf{Methods}: Extend synth to staggered adoption
-\item \textbf{Substance}: Application will find minimal effect of unions on spending
-\item \textbf{Connection}: Propensity score weighting with shrinkage
-\end{enumerate}
-
-\end{frame}
 
 
 
 \imageframe{./lecture_includes/augsynth_8.png}
 
-\begin{frame}{Synth treatment effect: average all the synths}
+\begin{frame}{Two approaches before now vs theirs}
+
+\begin{enumerate}
+
+\item Separate Synthetic Control -- Donohue, et al. 2019 estimates separate synth model for each state that passed concealed carry laws then averaged the estimates;
+	\begin{itemize}
+	\item  only works if you can find good for each one obviously
+	\item Can lead to poor fit for the average leading to bias when the average treatment effect is the target parameter
+	\end{itemize}
+\item Pooled Synthetic Control -- Minimizes the average pre-treatment imbalance across all treated units
+	\begin{itemize}
+	\item Can achieve nearly perfect fit for the average treated unit
+	\item Can yield substantially worse unit-specific fits
+	\end{itemize}
+\item Partially pooled (their proposal) -- minimizes a weighted average of the two imbalances
+
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Intuition of the Partially Pooled Approach}
+
+We want to balance the average of the underlying factor loadings
+
+\begin{itemize}
+\item Balancing individual units may cause large imbalance in the average if errors all go in the same direction
+\item Balancing the average outcome may not balance factor loadings if imbalance for different treated units offset each other
+\item Trade these off one another
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Average separate synths (separate SCM)}
 
 \begin{itemize}
 \item Suppose the first $J$ units are treated at times $T_1, \dots, T_J$
@@ -2985,9 +2976,9 @@ Their application is about teacher unions
 \end{frame}
 
 
-\begin{frame}{Synth treatment effect: average treated unit}
+\begin{frame}{Average treated unit (pooled SCM)}
 
-Or, we can think of it as Synth estimate for average treated unit
+Alternatively, we can think of it as Synth estimate for average treated unit which they call the pooled SCM
 
 \begin{eqnarray*}
 \widehat{\delta} = \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
@@ -3000,19 +2991,19 @@ Or, we can think of it as Synth estimate for average treated unit
 
 
 \begin{eqnarray*}
-\widehat{\delta} &=& \frac{1}{J} \sum_{j=1}^J \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg ) \\
-&=& \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\widehat{\delta}_{Separate\ SCM} &=& \frac{1}{J} \sum_{j=1}^J \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg ) \\
+\widehat{\delta}_{Pooled\ SCM}&=& \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
 \end{eqnarray*}
 
 \end{frame}
 
-\begin{frame}{Optimization problem}
+\begin{frame}{Returning to that optimization problem}
 
-Do we want to optimize the sum of the separate imbalances or the imbalance of the sum (the pooled imbalance)?
+So they ask: do we want to optimize the sum of the separate imbalances from the separate SCM or the imbalance of the sum (the pooled imbalance) from the pooled SCM?
 
 \begin{eqnarray*}
 \sum_{j=2}^{J+1} || X_j - \sum_i w_{ij}X_i ||^2\textrm{   or  } ||\sum_{j=2}^{J+1} X_j - \sum_i w_{ij} X_i ||^2
-\end{eqnarray*}where $j$ is treatment group and $i$ is donor pool units. Notice summations are inside or outside the norm
+\end{eqnarray*}where $j$ is treatment group and $i$ is donor pool units. Notice summations are inside or outside the norm. You will get different solutions obviously.
 \end{frame}
 
 \imageframe{./lecture_includes/augsynth_9.png}
