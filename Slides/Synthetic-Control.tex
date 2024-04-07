@@ -265,9 +265,8 @@ This is one of the most important policy parameters, if not the most important, 
 
 
 
-\section{Synthetic control and Modifications}
+\section{Original synthetic control method}
 
-\subsection{Original synthetic control method}
 
 \begin{frame}{First outline}
 
@@ -927,6 +926,10 @@ Governor Ann Richards (D) 1991-1995
 
 \end{frame}
 
+\section{Imperfect fit}
+
+\subsection{Bounding the bias}
+
 \begin{frame}{Suppose $Y^0$ is given by a factor model}
 
 
@@ -1033,7 +1036,7 @@ Suppose we found $W^*$ such that:
   But what about when we don't have good fit?
 \end{frame}
 
-\subsection{Imperfect fit: Demeaned synthetic control}
+\subsection{Demeaned Synthetic Control}
 
 \begin{frame}{From Abadie, et al. (2010)}
 
@@ -1121,7 +1124,7 @@ Suppose we found $W^*$ such that:
 
 
 
-\subsection{Imperfect fit: Augmented Synthetic Control}
+\subsection{Augmented Synthetic Control}
 
 \begin{frame}{More on imperfect fit}
 
@@ -1702,6 +1705,399 @@ R: \url{https://github.com/ebenmichael/augsynth}
 
 
 \section{Multiple Treated Units and Staggered}
+
+
+
+\subsection{Augmented Synthetic Control with Staggered Rollout}
+
+
+
+\begin{frame}{Augmented Synth with Staggered Rollout}
+
+\begin{itemize}
+\item Synth was originally designed for a single treated unit, no extrapolation, non-negative weights summed to one
+\item Previous Ben-Michael, Feller and Rothstein (2021a) paper addressed imperfect fit in the pre-trends using bias correction and slightly negative weighting
+\item This new paper (Ben-Michael, Feller and Rothstein 2021b) focuses on multiple units by allowing differential timing
+\item This and matrix completion with nuclear norm regularization seem to be relevant for the new differential timing papers in diff-in-diff
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Staggered Rollout and Synthetic Control}
+
+\begin{itemize}
+\item Groups of units are treated, but they are treated at different time periods
+\item Standard approach is DiD and event studies
+	\begin{itemize}
+	\item Tons of papers recently (e.g., Callaway and Sant'Anna 2021; Sun and Abraham 2021; de Chaisemartin D'Haultfouielle 2020; Borusyak, et al. 2023)
+	\item Identifying assumption in all DiD papers is \emph{parallel trends}
+	\end{itemize}
+\item When parallel trends is not viable, then ATT estimate is biased by a non-parallel trends bias term
+\item Synthetic control methods were updated to accommodated multiple treated groups
+
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Synth with staggered adoption}
+
+\begin{itemize}
+\item Core idea of the paper:  find a coherent way to manage multiple synthetic controls and aggregating them into a single parameter estimate
+\item Goal is to balance the imperfect biases in the pooled and the separate unit-level estimates
+\item Their working example will be a teacher union collective bargaining law and teacher salary study
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Estimating effects under staggered adoption}
+
+\begin{itemize}
+\item \textbf{Staggered adoption}: Multiple units adopt treatment over time
+\item \textbf{Common approaches can fail}: Little guidance when this happens
+	\begin{itemize}
+	\item Diff-in-diff requires parallel trends assumption
+	\item Synth designed for single treated units, poor fit on average
+	\end{itemize}
+\item \textcolor{red}{Partially pooled synthetic control}
+	\begin{itemize}
+	\item Modify the optimization problem to target overall and state-specific fit
+	\item Account for the level differences with an intercept shift
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\imageframe{./lecture_includes/augsynth_7.png}
+
+
+
+\begin{frame}{Teacher unions and teacher salaries/spending}
+
+Their application is about teacher unions
+\begin{itemize}
+\item 1964-1987: 33 states grant collective bargaining rights to teachers
+\item Long literature exploited the timing (Hoxby 1996; Lovenheim 2009)
+\item Impact on student spending, teacher salaries
+	\begin{itemize}
+	\item Hoxby (1996) finds increased spending by 12\%
+	\item Paglayan (2019) estimates precise zero in an event study model using ever-treated states
+	\end{itemize}
+\item Traditionally this was done using twoway fixed effects and event studies but these are known to have bias with heterogenous treatment effects (Goodman-Bacon 2021)
+\item They're going to re-analyze using all states and synth models and we can review it too using their code
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+
+\imageframe{./lecture_includes/augsynth_8.png}
+
+\begin{frame}{Two approaches before now vs theirs}
+
+\begin{enumerate}
+
+\item Separate Synthetic Control -- Donohue, et al. 2019 estimates separate synth model for each state that passed concealed carry laws then averaged the estimates;
+	\begin{itemize}
+	\item  only works if you can find good for each one obviously
+	\item Can lead to poor fit for the average leading to bias when the average treatment effect is the target parameter
+	\end{itemize}
+\item Pooled Synthetic Control -- Minimizes the average pre-treatment imbalance across all treated units
+	\begin{itemize}
+	\item Can achieve nearly perfect fit for the average treated unit
+	\item Can yield substantially worse unit-specific fits
+	\end{itemize}
+\item Partially pooled (their proposal) -- minimizes a weighted average of the two imbalances
+
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Intuition of the Partially Pooled Approach}
+
+We want to balance the average of the underlying factor loadings
+
+\begin{itemize}
+\item Balancing individual units may cause large imbalance in the average if errors all go in the same direction
+\item Balancing the average outcome may not balance factor loadings if imbalance for different treated units offset each other
+\item Trade these off one another
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Average separate synths (separate SCM)}
+
+\begin{itemize}
+\item Suppose the first $J$ units are treated at times $T_1, \dots, T_J$
+\item Suppose we find a synthetic control for each, with $w_{ij}$ the weight on donor unit $i$ for treated unit $j$
+\item Our estimate of the ATT at event time $k$ will then be
+\end{itemize}
+
+\begin{eqnarray*}
+\widehat{\delta} = \frac{1}{J} \sum_{j=1}^{J+1} \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\end{eqnarray*}Average of $J$ separate synth estimates
+
+\end{frame}
+
+
+\begin{frame}{Average treated unit (pooled SCM)}
+
+Alternatively, we can think of it as Synth estimate for average treated unit which they call the pooled SCM
+
+\begin{eqnarray*}
+\widehat{\delta} = \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\end{eqnarray*}
+
+\end{frame}
+
+
+\begin{frame}{Two definitions of ATT}
+
+
+\begin{eqnarray*}
+\widehat{\delta}_{Separate\ SCM} &=& \frac{1}{J} \sum_{j=1}^J \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg ) \\
+\widehat{\delta}_{Pooled\ SCM}&=& \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}{Returning to that optimization problem}
+
+So they ask: do we want to optimize the sum of the separate imbalances from the separate SCM or the imbalance of the sum (the pooled imbalance) from the pooled SCM?
+
+\begin{eqnarray*}
+\sum_{j=2}^{J+1} || X_j - \sum_i w_{ij}X_i ||^2\textrm{   or  } ||\sum_{j=2}^{J+1} X_j - \sum_i w_{ij} X_i ||^2
+\end{eqnarray*}where $j$ is treatment group and $i$ is donor pool units. Notice summations are inside or outside the norm. You will get different solutions obviously.
+\end{frame}
+
+\imageframe{./lecture_includes/augsynth_9.png}
+
+\imageframe{./lecture_includes/augsynth_10.png}
+
+\imageframe{./lecture_includes/augsynth_11.png}
+
+\imageframe{./lecture_includes/augsynth_12.png}
+
+\imageframe{./lecture_includes/augsynth_13.png}
+
+\imageframe{./lecture_includes/augsynth_14.png}
+
+\imageframe{./lecture_includes/augsynth_15.png}
+
+\imageframe{./lecture_includes/augsynth_16.png}
+
+\imageframe{./lecture_includes/augsynth_17.png}
+
+\imageframe{./lecture_includes/augsynth_18.png}
+
+
+
+\begin{frame}{Proposal: Partially pool synth}
+
+Instead of minimizing pooled imbalance or average state imbalance, minimize a \emph{weighted average}:
+
+\begin{eqnarray*}
+\textrm{min  }_{\Gamma \in \Delta^{synth}}  &&v|| \textrm{Pooled balance} ||^2_2 \\
+&&+ (1-v) \frac{1}{J} \sum_{j=2}^{J+1} ||\textrm{ State balance } ||^2_2 \\
+&&+ \textrm{ penalty }
+\end{eqnarray*}``Returns'' to this are highly convex: setting $v$ just a little below 1 yields a big improvement in state-level imbalance with very little cost in pooled imbalance
+
+\end{frame}
+
+\begin{frame}{$v$ hyperparameter}
+
+\begin{itemize}
+
+\item $v$ is the hyperparameter $v \in [0,1]$
+\item It governs the relative importance of the two objectives; 
+\item higher values of $v$ correspond to more weight on the pooled fit relative to the separate fit
+\item When $v=0$, it's the separate SCM and when it's $v=1$ it's the pooled SCM
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Intermediate choice of $v$}
+
+\begin{itemize}
+
+\item It is important to control both the pooled fit (for the ATT) and the unit-level fits (for both the ATT and the unit-level estimates)
+\item The hyper-parameter $v$ controls the relative weight of these in the objective
+\item In general, we want to find good estimates of both the overall ATT and the unit-level effects
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Intermediate choice of $v$}
+
+\begin{itemize}
+
+\item Following figures is the balance possibility frontier: the y-axis shows the pooled imbalance and the x-axis shows the unit-level imbalance
+\item The curve traces how these change as we vary $v$ from the SCM solution upper left to the pool lower right
+\item Strongly convex relationship which means we can accept a very small increase in pooled imbalance from the pooled solution and get large reductions in unit-level imbalance and vice versa
+
+\end{itemize}
+
+\end{frame}
+
+\imageframe{./lecture_includes/augsynth_19.png}
+
+\imageframe{./lecture_includes/augsynth_20.png}
+
+\imageframe{./lecture_includes/augsynth_21.png}
+
+\imageframe{./lecture_includes/augsynth_22.png}
+
+\imageframe{./lecture_includes/augsynth_23.png}
+
+
+
+\begin{frame}{Interpreting}
+
+\begin{itemize}
+
+\item So even going from $v=1$ to $v=0.99$ cuts the unit-level imbalance by 30 percent with almost no change in the pooled fit
+\item In many cases, it will be possible to trade off a small increase in pooled imbalance for a large decrease in unit-level imbalance
+\item This would yield a better estimator of the overall ATT and the unit-level estimates at little cost
+\item The balance possibility frontier is a tool you use to try and trace out the trade-offs between the pooled and unit-level fit and choose which ever $v$ they want
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Heuristic for $v$}
+
+\begin{itemize}
+
+\item They use a simple heuristic for choosing $v$
+\item The ratio of the pooled fir to the average unit-level fit
+\item The key idea is that if the separate problem with $v=0$ achieved good pooled fit on its own, then you want a small $v$ which ensures good unit and pooled fit
+\item If the pooled fit of separate is poor, then there can be substantial gains to giving the pooled higher priority and setting $v$ large
+
+\end{itemize}
+
+\end{frame}
+
+%\imageframe{./lecture_includes/augsynth_24.png}
+
+\imageframe{./lecture_includes/augsynth_25.png}
+
+
+\begin{frame}{Augment staggered adoption}
+
+\begin{enumerate}
+\item Estimate an outcome model
+\item Estimate the partially pooled synth model
+\item Use the outcome model to adjust synth for imbalance (bias correction) or alternatively just use synth on the residuals from the outcome model (double robust)
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Special case: weighted event study}
+
+\begin{itemize}
+\item Estimate unit fixed effects via pre-treatment average: $\overline{Y}_{i,T_j}^{pre}$
+\item Estimate synth using residuals (Doudchenko and Imbens 2017; Ferman and Pinto 2018)
+\end{itemize}
+
+
+\begin{eqnarray*}
+\widehat{Y}^{aug}_{j,T_j+k}(0) = \overline{Y}_{j,T_j}^{pre} + \sum_{i=1}^N \widehat{w}_{ij} \bigg ( Y_{i,T_j+k} - \overline{Y}_{i,T_j}^{pre} \bigg )
+\end{eqnarray*}where $Y(0)=Y^0$
+
+\end{frame}
+
+\begin{frame}{Special case: weighted event study}
+
+Treatment effect estimate is \textbf{weighted diff-in-diff}:
+
+\begin{eqnarray*}
+\widehat{\delta}_{jk}^{aug} = \bigg ( Y_{j,T_j+k} - \overline{Y}_{j,T_j}^{pre} \bigg ) - \sum_{i=1}^N \widehat{w}_{ij} \bigg (Y_{i,T_j+k} - \overline{Y}_{i,T_j}^{pre} \bigg )
+\end{eqnarray*}Uniform weights correspond to ``standard DiD''
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_26.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_27.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_28.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_29.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_30.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_31.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Conclusions}
+
+\begin{itemize}
+\item Synth is useful for very difficult problems in which parallel trends is implausible
+\item With large $T$ and perfect balance, you can use synth to get approximately unbiased treatment effect estimates under reasonable DGPs (we saw in the original ADH)
+\item But perfect balance is a unicorn and doesn't happen in most settings
+\item What do we do when it doesn't?  Give up?  Salvage the estimates somehow? How?
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Conclusions}
+
+\begin{itemize}
+\item Augmented synth allows us to salvage the method, using an outcome model to remove bias from imperfect balance
+\item Partially pooled synth allows extension to the staggered adoption setting
+\item Combining the two methods gives us the best hope 
+	\begin{itemize}
+	\item A simple fixed effect outcome model leads to a weighted event study
+	\item This generalizes recent recommendations for two-way fixed effects
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
 
 \subsection{Matrix completion with nuclear norm}
 
@@ -2849,317 +3245,6 @@ Number of observations  & & 57,470 & & & 630 & & & 56,840 & \\ \bottomrule\botto
 
 
 
-
-
-
-\subsection{Augmented Synthetic Control with Staggered Rollout}
-
-\begin{frame}{Staggered rollout and Synthetic Control}
-
-\begin{itemize}
-\item Groups of units are treated, but they are treated at different time periods
-\item Standard approach is DiD and event studies
-	\begin{itemize}
-	\item Tons of papers recently (e.g., Callaway and Sant'Anna 2021; Sun and Abraham 2021; de Chaisemartin D'Haultfouielle 2020; Borusyak, et al. 2023)
-	\item Identifying assumption in all DiD papers is \emph{parallel trends}
-	\end{itemize}
-\item When parallel trends is not viable, then ATT estimate is biased by a non-parallel trends bias term
-\item Synthetic control methods were updated to accomodated multiple treated groups
-
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{Augmented Synth with Staggered Rollout}
-
-\begin{itemize}
-\item Synth was originally designed for a single treated unit, no extrapolation, non-negative weights summed to one
-\item Previous Ben-Michael, Feller and Rothstein (2021a) paper addressed imperfect fit in the pre-trends using bias correction and slightly negative weighting
-\item This new paper (Ben-Michael, Feller and Rothstein 2021b) focuses on multiple units by allowing differential timing
-\item It will fit with the newer diff-in-diff literature, but it should also fit with MCNN, though might be useful for someone to run a horse race
-\end{itemize}
-
-\end{frame}
-
-
-
-
-
-\begin{frame}{Synth with staggered adoption}
-
-\begin{itemize}
-\item Synth was designed originally for the comparative case study -- i.e., one treatment group
-\item What do we do when there's more than one treatment group?
-\item Core idea of the paper:  find a coherent way to manage multiple synthetic controls and aggregating them into a single parameter estimate
-\item Their working example will be a teacher union collective bargaining law and teacher salary study
-\end{itemize}
-
-\end{frame}
-
-
-\imageframe{./lecture_includes/augsynth_7.png}
-
-
-
-\begin{frame}{Teacher unions and teacher salaries/spending}
-
-Their application is about teacher unions
-\begin{itemize}
-\item 1964-1987: 33 states grant collective bargaining rights to teachers
-\item Long literature exploited the timing (Hoxby 1996; Lovenheim 2009)
-\item Impact on student spending, teacher salaries
-	\begin{itemize}
-	\item Hoxby (1996) finds increased spending by 12\%
-	\item Paglayan (2019) estimates precise zero in an event study model using ever-treated states
-	\end{itemize}
-\item Traditionally this was done using twoway fixed effects and event studies but these are known to have bias with heterogenous treatment effects (Goodman-Bacon 2021)
-\item They're going to re-analyze using all states and synth models and we can review it too using their code
-\end{itemize}
-
-\end{frame}
-
-
-
-
-
-
-
-\imageframe{./lecture_includes/augsynth_8.png}
-
-\begin{frame}{Two approaches before now vs theirs}
-
-\begin{enumerate}
-
-\item Separate Synthetic Control -- Donohue, et al. 2019 estimates separate synth model for each state that passed concealed carry laws then averaged the estimates;
-	\begin{itemize}
-	\item  only works if you can find good for each one obviously
-	\item Can lead to poor fit for the average leading to bias when the average treatment effect is the target parameter
-	\end{itemize}
-\item Pooled Synthetic Control -- Minimizes the average pre-treatment imbalance across all treated units
-	\begin{itemize}
-	\item Can achieve nearly perfect fit for the average treated unit
-	\item Can yield substantially worse unit-specific fits
-	\end{itemize}
-\item Partially pooled (their proposal) -- minimizes a weighted average of the two imbalances
-
-\end{enumerate}
-
-\end{frame}
-
-\begin{frame}{Intuition of the Partially Pooled Approach}
-
-We want to balance the average of the underlying factor loadings
-
-\begin{itemize}
-\item Balancing individual units may cause large imbalance in the average if errors all go in the same direction
-\item Balancing the average outcome may not balance factor loadings if imbalance for different treated units offset each other
-\item Trade these off one another
-\end{itemize}
-
-\end{frame}
-
-
-
-\begin{frame}{Average separate synths (separate SCM)}
-
-\begin{itemize}
-\item Suppose the first $J$ units are treated at times $T_1, \dots, T_J$
-\item Suppose we find a synthetic control for each, with $w_{ij}$ the weight on donor unit $i$ for treated unit $j$
-\item Our estimate of the ATT at event time $k$ will then be
-\end{itemize}
-
-\begin{eqnarray*}
-\widehat{\delta} = \frac{1}{J} \sum_{j=1}^{J+1} \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg )
-\end{eqnarray*}Average of $J$ separate synth estimates
-
-\end{frame}
-
-
-\begin{frame}{Average treated unit (pooled SCM)}
-
-Alternatively, we can think of it as Synth estimate for average treated unit which they call the pooled SCM
-
-\begin{eqnarray*}
-\widehat{\delta} = \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
-\end{eqnarray*}
-
-\end{frame}
-
-
-\begin{frame}{Two definitions of ATT}
-
-
-\begin{eqnarray*}
-\widehat{\delta}_{Separate\ SCM} &=& \frac{1}{J} \sum_{j=1}^J \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg ) \\
-\widehat{\delta}_{Pooled\ SCM}&=& \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
-\end{eqnarray*}
-
-\end{frame}
-
-\begin{frame}{Returning to that optimization problem}
-
-So they ask: do we want to optimize the sum of the separate imbalances from the separate SCM or the imbalance of the sum (the pooled imbalance) from the pooled SCM?
-
-\begin{eqnarray*}
-\sum_{j=2}^{J+1} || X_j - \sum_i w_{ij}X_i ||^2\textrm{   or  } ||\sum_{j=2}^{J+1} X_j - \sum_i w_{ij} X_i ||^2
-\end{eqnarray*}where $j$ is treatment group and $i$ is donor pool units. Notice summations are inside or outside the norm. You will get different solutions obviously.
-\end{frame}
-
-\imageframe{./lecture_includes/augsynth_9.png}
-
-\imageframe{./lecture_includes/augsynth_10.png}
-
-\imageframe{./lecture_includes/augsynth_11.png}
-
-\imageframe{./lecture_includes/augsynth_12.png}
-
-\imageframe{./lecture_includes/augsynth_13.png}
-
-\imageframe{./lecture_includes/augsynth_14.png}
-
-\imageframe{./lecture_includes/augsynth_15.png}
-
-\imageframe{./lecture_includes/augsynth_16.png}
-
-\imageframe{./lecture_includes/augsynth_17.png}
-
-\imageframe{./lecture_includes/augsynth_18.png}
-
-
-
-\begin{frame}{Proposal: Partially pool synth}
-
-Instead of minimizing pooled imbalance or average state imbalance, minimize a \emph{weighted average}:
-
-\begin{eqnarray*}
-\textrm{min  }_{\Gamma \in \Delta^{synth}}  &&v|| \textrm{Pooled balance} ||^2_2 \\
-&&+ (1-v) \frac{1}{J} \sum_{j=2}^{J+1} ||\textrm{ State balance } ||^2_2 \\
-&&+ \textrm{ penalty }
-\end{eqnarray*}``Returns'' to this are highly convex: setting $v$ just a little below 1 yields a big improvement in state-level imbalance with very little cost in pooled imbalance
-
-\end{frame}
-
-
-
-\imageframe{./lecture_includes/augsynth_19.png}
-
-\imageframe{./lecture_includes/augsynth_20.png}
-
-\imageframe{./lecture_includes/augsynth_21.png}
-
-\imageframe{./lecture_includes/augsynth_22.png}
-
-\imageframe{./lecture_includes/augsynth_23.png}
-
-\imageframe{./lecture_includes/augsynth_24.png}
-
-\imageframe{./lecture_includes/augsynth_25.png}
-
-
-\begin{frame}{Augment staggered adoption}
-
-\begin{enumerate}
-\item Estimate an outcome model
-\item Estimate the partially pooled synth model
-\item Use the outcome model to adjust synth for imbalance (bias correction) or alternatively just use synth on the residuals from the outcome model (double robust)
-\end{enumerate}
-
-\end{frame}
-
-\begin{frame}{Special case: weighted event study}
-
-\begin{itemize}
-\item Estimate unit fixed effects via pre-treatment average: $\overline{Y}_{i,T_j}^{pre}$
-\item Estimate synth using residuals (Doudchenko and Imbens 2017; Ferman and Pinto 2018)
-\end{itemize}
-
-
-\begin{eqnarray*}
-\widehat{Y}^{aug}_{j,T_j+k}(0) = \overline{Y}_{j,T_j}^{pre} + \sum_{i=1}^N \widehat{w}_{ij} \bigg ( Y_{i,T_j+k} - \overline{Y}_{i,T_j}^{pre} \bigg )
-\end{eqnarray*}where $Y(0)=Y^0$
-
-\end{frame}
-
-\begin{frame}{Special case: weighted event study}
-
-Treatment effect estimate is \textbf{weighted diff-in-diff}:
-
-\begin{eqnarray*}
-\widehat{\delta}_{jk}^{aug} = \bigg ( Y_{j,T_j+k} - \overline{Y}_{j,T_j}^{pre} \bigg ) - \sum_{i=1}^N \widehat{w}_{ij} \bigg (Y_{i,T_j+k} - \overline{Y}_{i,T_j}^{pre} \bigg )
-\end{eqnarray*}Uniform weights correspond to ``standard DiD''
-
-\end{frame}
-
-
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.4]{./lecture_includes/augsynth_26.png}
-	\end{figure}
-
-\end{frame}
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.4]{./lecture_includes/augsynth_27.png}
-	\end{figure}
-
-\end{frame}
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.4]{./lecture_includes/augsynth_28.png}
-	\end{figure}
-
-\end{frame}
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.4]{./lecture_includes/augsynth_29.png}
-	\end{figure}
-
-\end{frame}
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.4]{./lecture_includes/augsynth_30.png}
-	\end{figure}
-
-\end{frame}
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.4]{./lecture_includes/augsynth_31.png}
-	\end{figure}
-
-\end{frame}
-
-\begin{frame}{Conclusions}
-
-\begin{itemize}
-\item Synth is useful for very difficult problems in which parallel trends is implausible
-\item With large $T$ and perfect balance, you can use synth to get approximately unbiased treatment effect estimates under reasonable DGPs (we saw in the original ADH)
-\item But perfect balance is a unicorn and doesn't happen in most settings
-\item What do we do when it doesn't?  Give up?  Salvage the estimates somehow? How?
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{Conclusions}
-
-\begin{itemize}
-\item Augmented synth allows us to salvage the method, using an outcome model to remove bias from imperfect balance
-\item Partially pooled synth allows extension to the staggered adoption setting
-\item Combining the two methods gives us the best hope 
-	\begin{itemize}
-	\item A simple fixed effect outcome model leads to a weighted event study
-	\item This generalizes recent recommendations for two-way fixed effects
-	\end{itemize}
-\end{itemize}
-
-\end{frame}
 
 
 

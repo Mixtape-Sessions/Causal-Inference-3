@@ -52,7 +52,7 @@ quietly gen y0 = baseline + year_diff*1000
 quietly gen error = rnormal(0, 2000)
 quietly replace y0 = y0 + error
 
-* Define Y(1) with an ATT of -$5000 for married women in experimental states post-2015
+* Define Y(1) with an ATT of -$1000 for married women in experimental states post-2015
 quietly gen 	y1 = y0
 quietly replace y1 = y0 - 1000 if experimental == 1 & after == 1
 

@@ -95,6 +95,10 @@ replace te = te4 if group == 4
 * How does (year - treat_date + 1) create dynamic ATT?  Assume treat_date is 1992 and it is year 2000. Then, te=8 x (2000 - 1992 + 1) = 8 x (9) = 72. Group 2's TE rises from an 8 up to 72 in the t+8 year.
 ***********************************************************************************************************************
 
+* ssc install reghdfe, replace
+* cap ado uninstall fect
+* net install fect, from(https://raw.githubusercontent.com/xuyiqing/fect_stata/master/) replace
+
 gen y0 = firms + n + e // parallel trends (unit level) in y0. Everyone's Y0 grows at n+e where e is tiny shocks with mean of 0.
 
 * Non-dynamic treatment effects.  Notice, the treatment effect is constant over time.
@@ -121,8 +125,14 @@ ta 		time_til, gen(dd)
 
 * Matrix completion
 
+* Must use a matrix of Y0 only so drop the "fully adopted periods"
+drop if year>2003
+
+* Estimated ATT is 68.33.  See https://docs.google.com/spreadsheets/d/1dI67eNNE2zrX4KrkoFvej-cKxqHkM8yJdMpD-0uE4q8/edit?usp=sharing under the Dynamic DiD tab and highlight all the non-zero cells through 2003 (not for 2004-2009) and look at the average (lower right hand corner)
+
 quietly fect y, treat(treat) unit(id) time(year) method("mc") nlambda(10) se nboots(100) 
 
+mat list e(ATT)
 quietly mat b=e(ATT)
 quietly local mcnn = b[1,1]
 quietly scalar mcnn=`mcnn'
