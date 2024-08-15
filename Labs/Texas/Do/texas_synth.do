@@ -6,7 +6,7 @@
 * date: august 28, 2020
 **************************************************************
 
-cd "/Users/scott_cunningham/Documents/Causal-Inference-2 2/Lab/Texas/Do"
+cd "/Users/scunning/Causal-Inference-3/Labs/Texas/Do"
 capture log close
 capture log using ./texas.log, replace text
 
