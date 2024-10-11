@@ -2736,7 +2736,7 @@ The treatment cannot depend on the error term, but may depend on the systematic 
 \begin{frame}{Regression}
 
 \begin{itemize}
-\item SC is weighted linear regression with no unit FEs:$$\tau^{sc} = \textrm{argmin}_{\tau, \lambda}  \sum_{i,t} (Y_{it} - \lambda_t - \tau D_{it})^2 \times w_i^{sc} $$
+\item SC is weighted linear regression with no time FEs:$$\tau^{sc} = \textrm{argmin}_{\tau, \lambda}  \sum_{i,t} (Y_{it} - \lambda_t - \tau D_{it})^2 \times w_i^{sc} $$
 \item DiD is unweighted regression with unit FEs and time FEs:$$\textrm{argmin}_{\tau, \lambda, \alpha}  \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i -  \tau D_{it})^2 $$
 \item SDiD is weighted regression with unit FEs and time FEs:$$ \textrm{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2 \times w_i \times \lambda_t$$
 \end{itemize}
