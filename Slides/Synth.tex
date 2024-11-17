@@ -1,0 +1,3441 @@
+\documentclass{beamer}
+
+\input{preamble.tex}
+\usepackage{breqn} % Breaks lines
+
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+\usepackage{pdfpages} % \includepdf
+
+\usepackage{listings} % R code
+\usepackage{verbatim} % verbatim
+
+% packages for bibs and cites
+% \usepackage{natbib}
+% \usepackage{har2nat}
+% \newcommand{\possessivecite}[1]{\citeauthor{#1}'s \citeyearpar{#1}}
+% \usepackage{breakcites}
+% \usepackage{alltt}
+
+% Setup math operators
+\DeclareMathOperator{\E}{E} \DeclareMathOperator{\tr}{tr} \DeclareMathOperator{\se}{se} \DeclareMathOperator{\I}{I} \DeclareMathOperator{\sign}{sign} \DeclareMathOperator{\supp}{supp} \DeclareMathOperator{\plim}{plim}
+\DeclareMathOperator*{\dlim}{\mathnormal{d}\mkern2mu-lim}
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+   \def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+\newcommand*\colvec[1]{\begin{pmatrix}#1\end{pmatrix}}
+
+\newcommand{\myurlshort}[2]{\href{#1}{\textcolor{gray}{\textsf{#2}}}}
+
+
+\begin{document}
+
+\imageframe{./lecture_includes/cover.png}
+
+
+% ---- Content ----
+
+   
+
+\section{Introduction to course}
+
+\subsection{What is Mixtape Sessions?}
+
+
+\begin{frame}{Welcome!}
+
+  \begin{itemize}
+	\item I'm Scott Cunningham, professor of economics at Baylor University, author of \underline{Causal Inference: the Mixtape}
+	\item I teach and host workshops on causal inference all over the world because I believe many people do not have all the opportunities they want to have that they believe will help them be successful in their research and careers 
+	\item Workshops can be helpful ways to plug into one's methodological training, and online workshops are very helpful because of the recordings, the coding together, and bunch of bells and whistles (e.g., github repositories)
+  \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{What is Mixtape Sessions?}
+
+  \begin{itemize}
+    \item Mixtape Sessions is my online platform started in November 2021 to ``democratize causal inference'' by helping connect people, from beginner to advanced, with material and teachers that for various reasons may not be accessible otherwise
+    \item I became obsessed with teaching and writing about causal inference because of a strong conviction that (a) it is important and (b) not everyone had the same chances to learn it
+    \item I tend to emphasize intuition, mechanics, narrow calculations, meaning, assumptions, code including actually taking time to code, advocate for data visualization -- in other words the art and the science
+    \item I decided to start teaching a workshop on synthetic control given it is considered one of the more important innovations in causal inference of the last twenty years (Athey and Imbens 2017)
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{2-day Causal Inference Workshop}
+
+  \begin{itemize}
+    \item We workshop together for 2-days, 9am to 5pm CST with 15 min breaks on the hour and a 1-hour lunch break at noon CST
+    \item I mix exposition, discussion of papers, coding exercises and discussion as best as I can
+    \item I see this workshop as attempting to explain the method, explain some papers, but mainly towards providing guidance on projects using synthetic control, not simply the abstractions of the method 
+    \item Music at intermissions fyi
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{What my pedagogy is like}
+
+\begin{itemize}
+\item Long days that don't feel long because it's high energy, with regular breaks including lunch
+\item Move between the econometrics, applications, code, spreadsheets, exercises
+\item Ask questions at any point; I'll do my best to answer them and if I can't Kyle can
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Class goals}
+
+  \begin{enumerate}
+    \item \textbf{Confidence}: You will feel like you have a good understanding of synthetic control so that by the end it doesn't feel all that mysterious or intimidating
+    \item \textbf{Comprehension}: You will have learned a lot both conceptually and in the specifics, particularly with regards to issues around identification and estimation
+    \item \textbf{Competency}: You will have more knowledge of programming syntax in Stata and R (and python!) so that later you can apply this in your own work
+  \end{enumerate}
+
+\end{frame}
+
+
+%\begin{frame}{Causal Inference table of contents}
+%  \centering
+%  \includegraphics[scale=0.5,height=6.5cm, width=10cm]{./lecture_includes/part1}
+%\end{frame}
+
+%\begin{frame}{Causal Inference Part 2}
+%  \centering
+%  \includegraphics[scale=0.5,height=6.5cm, width=10cm]{./lecture_includes/part2}
+%  \url{https://www.mixtapesessions.io/session/ci_II_aug20}
+%\end{frame}
+
+
+
+
+\begin{frame}{Github repo}
+
+  \begin{itemize}
+    \item We will communicate with one another regularly in the Discord channel and I will always be monitoring it
+    \item Encourage you to talk to each other there, help one another, network with one another, coauthor with one another!
+    \item I will be distributing things to you, like code and slides, via the github repo: \url{https://github.com/Mixtape-Sessions/Causal-Inference-3.git}
+    \item Each lecture will be recorded and then uploaded to Vimeo as a password protected file that you'll have access to into perpetuity
+    \item Kyle Butts and I are committed to over time making the Github Repository like an open public library where the only club goods are (a) recordings, (b) Discord and (c) live lectures
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Topics}
+
+  \begin{enumerate}
+    \item Synthetic control traditionally without extrapolation
+    \item Synthetic control with extrapolation and bias adjustment
+    \item Multiple treated units, staggered adoption, and merging with diff-in-diff
+	\item Bonus: event studies!
+  \end{enumerate}
+
+\end{frame}
+
+\subsection{Warranted Beliefs and Causal Inference}
+
+\begin{frame}
+\frametitle{Warranted Belief and Causal Inference}
+\begin{itemize}
+  \item Warranted belief, a phrase from philosophy, is like a bridge connecting true belief to knowledge 
+  \item In causal inference, think of it as ``good reasons'' to believe in our estimations of causal effects.
+  \item But the potential outcomes framework highlights the epistemic challenge of this enterprise caused by unobserved ``counterfactuals''
+  \item Randomized Controlled Trials (RCTs) offer strong warrants by closely approximating counterfactual scenarios by minimizing confounders allowing us to one group for another.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{RCTs, Warrants, and Epistemic Humility}
+\begin{itemize}
+  \item Our beliefs about causal effects are probabilistic, rooted in the integrity of our assumptions.
+  \item This approach reflects an epistemic humility, acknowledging our methods' limitations.
+  \item Continuous inquiry and evidence accumulation inch us closer to true knowledge.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Epistemic Value of Quasi-Experimental Designs}
+\begin{itemize}
+  \item Not all quasi-experimental designs are equal in their epistemic contribution.
+  \item Well-executed propensity score studies may approach closer to knowledge than poorly designed RCTs.
+  \item Synthetic control methods offer a pathway to robust knowledge, with varying degrees of effectiveness.
+  \item This workshop aims to refine our use of synthetic control towards stronger warrants of knowledge.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Causal Inference vs Prediction}
+  \centering
+  \includegraphics[scale=0.5,height=6.5cm, width=10cm]{./lecture_includes/prediction_causality.png}
+\end{frame}
+
+\begin{frame}{Causal Inference vs Prediction}
+
+  \begin{columns}
+    \column{0.48\linewidth}
+    \centering
+    \textbf{Traditional prediction}
+    \begin{itemize}
+      \item Traditional prediction seeks to detect patterns in data and fit functional relationships between variables with a high degree of accuracy
+      \item ``Does this person have heart disease?'', ``How many books will I sell?''
+      \item It is not predictions of what effect a choice will have, though
+    \end{itemize}
+    \column{0.48\linewidth}
+    \centering
+    \textbf{Causal inference}
+    \begin{itemize}
+      \item Causal inference is also a type of prediction, but it's a prediction of a \emph{counterfactual} associated with a particular \emph{choice taken}
+      \item Causal inference takes that predicted (or imputed) counterfactual and constructs a causal effect that we hope tells us about a future in the event of a similar choice taken
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+
+\subsection{Potential outcomes review}
+
+
+\begin{frame}{Potential outcomes history}
+
+\begin{itemize}
+
+\item Causal inference is a scientific field within and across all major scientific categories focused on the epistemological foundations for believing one thing causes another
+\item Core idea in causal inference is to distinguish between what is the true (``realized outcome'') versus what may have been possible had something been different (``counterfactual'')
+\item Many people lay ownership to the following notation but it's broadly thought the mathematical notation comes from Jerzy Neyman's 1923 masters thesis, but you can find the ideas before him (e.g., John Stuart Mill, Ronald Fisher)
+\item Most commonly associated today with Don Rubin, former chair of Harvard's stats department (now retired)
+
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Potential outcomes notation}
+	
+	\begin{itemize}
+	\item Let the treatment be a binary variable: $$D_{i,t} =\begin{cases} 1 \text{ if in job training program $t$} \\ 0 \text{ if not in job training program at time $t$} \end{cases}$$where $i$ indexes an individual observation, such as a person
+
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Potential outcomes notation}
+	
+	\begin{itemize}
+
+	\item Potential outcomes: $$Y_{i,t}^j =\begin{cases} 1 \text{: wages at time $t$ if trained} \\ 0 \text{: wages at time $t$ if not trained} \end{cases}$$where $j$ indexes a counterfactual state of the world
+
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Treatment effect definitions}
+
+
+	\begin{block}{Individual treatment effect}
+	    The individual treatment effect,  $\delta_i$, equals $Y_i^1-Y_i^0$
+	\end{block}
+
+Missing data problem:  I don't know my own counterfactual
+	
+\end{frame}
+
+
+\begin{frame}{Conditional Average Treatment Effects}	
+	\begin{block}{Average Treatment Effect on the Treated (ATT)}
+	The average treatment effect on the treatment group is equal to the average treatment effect conditional on being a treatment group member:
+		\begin{eqnarray*}
+		E[\delta|D=1]&=&E[Y^1-Y^0|D=1] \nonumber \\
+		&=&E[Y^1|D=1]-\textcolor{red}{E[Y^0|D=1]}
+		\end{eqnarray*}
+	\end{block}
+	
+	\bigskip
+
+This is one of the most important policy parameters, if not the most important, and coincidentally it's also the parameter you get with synthetic control.  
+
+	
+\end{frame}
+
+
+
+
+\section{Original synthetic control method}
+
+
+\begin{frame}{First outline}
+
+\begin{enumerate}
+\item \textbf{Abadie's synth}: We will start here as the foundation, understand it inside and out, practice with it, and try to learn good practices, as well as its bias
+\item \textbf{Demeaned synth}: Early modification by Bruno Ferman and Chris Pinto addressing the bias of synth in greater detail, and offering solutions
+\item \textbf{Augmented synth}: Further modifications of the biased synth, draws on earlier work by Abadie and Imbens (2011) in matching (bias correction)
+\end{enumerate}
+
+\end{frame}
+
+
+
+
+\begin{frame}[plain]
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/currie_synth.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{History of synthetic control}
+
+ 
+``The Economic Costs of Conflict: A Case Study of Basque Country'' (2003) by Alberto Abadie and Javier Gardeazabal, \emph{American Economic Review} (see /Readings at Github Repo)
+
+\bigskip
+\footnotesize
+\begin{quote} ``About synthetic controls: I had played with related notions for some time, thinking about panel data methods to measure the effects of aggregate interventions. But the idea of synthetic controls shaped up in my mind with the Basque Country example. As always, taking vague concepts to data helps. There wasn’t much one could do in terms of DD for the Basque example. When I saw what is now Figure 1 in the Basque paper appearing on my computer screen after the code finished running for the first time, the value of the method became immediately clear.''
+\end{quote}
+
+
+\end{frame}
+
+
+\begin{frame}{}
+
+\begin{figure}
+\includegraphics[scale=0.5]{./lecture_includes/basque_figure1}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Synth in Abadie's own words}
+
+Approximately 5 minutes
+
+\url{https://youtu.be/19cRm8aKF-I?si=dD13K60RjTt6E4EF&t=265}
+
+\end{frame}
+
+\begin{frame}{So what is this thing called synthetic control}
+	
+	\begin{itemize}
+	\item Synthetic control has been called the most important innovation in causal inference of the last two decades by Athey and Imbens (2017)
+	\item Originally designed for comparative case studies, but ongoing developments have extended it to multiple treated units, differential timing, bias adjustment and even modifications to difference-in-differences
+	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and modifications continue all the time
+	\item Many will move to synthetic control after throwing in the towel on Diff-in-Diff -- \emph{but why?}
+	\end{itemize}
+\end{frame}
+	
+\begin{frame}{What is a comparative case study?}
+
+\begin{itemize}
+\item Comparative case studies compare a single aggregate unit (like a country) to another unit (like another country) to make statements about causal effects from aggregate policies or events
+\item But the single treated unit can be any aggregate unit: a country, a state, school, firm, etc. 
+\item Social scientists traditionally approached comparative case studies in one of two ways:
+	\begin{enumerate}
+	\item \textcolor{blue}{Qualitatively} (political science)
+	\item \textcolor{red}{Quantitatively} (economics)
+	\end{enumerate}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{\textcolor{blue}{Qualitative} comparative case studies}
+	
+	\begin{itemize}
+	\item In \textcolor{blue}{qualitative} comparative case studies, the goal might be to reason \emph{inductively} the causal effects of events or characteristics of a single unit on some outcome, oftentimes through logic and historical analysis.  
+		\begin{itemize}
+		\item Classic example of comparative case study approach is Alexis de Toqueville's \underline{Democracy in America} (but he is regularly comparing the US to France)
+		\end{itemize}
+	\item Sometimes there may not be an explicit counterfactual, or if there is, it's not principled (subjective researcher decision)
+	\item Quantitative claims about causal effects are unlikely -- de Toqueville's won't claim GDP per capita fell \$500 when compared against France
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Traditional \textcolor{red}{quantitative} comparative case studies}
+
+\begin{itemize}
+	\item Traditional  \textcolor{red}{quantitative}  comparative case studies are explicitly causal designs in that there is a treatment and control, usually involving natural experiment on a single aggregate unit
+	\item Comparison focuses on the the evolution of an aggregate outcome for the unit affected by the intervention to the evolution of the same \emph{ad hoc} aggregate control group (Card 1990; Card and Krueger 1994)
+	\item It'll essentially be diff-in-diff, but it may not use the event study, and the point is the choice of controls is a subset of all possible controls
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Pros of the traditional comparative case study}
+	Pros:
+
+		\begin{itemize}
+		\item Takes advantage of policy interventions that take place at an aggregate level (which is common and so this is useful)
+		\item Aggregate/macro data are often available (which may be all we have)
+		\end{itemize}
+\end{frame}
+
+\begin{frame}{Cons of the traditional comparative case study}
+	Cons:
+
+		\begin{itemize}
+		\item Selection of control group is \emph{ad hoc} -- opens up researcher biases, even unconscious
+		\item Standard errors do not reflect uncertainty about the ability of the control group to reproduce the counterfactual of interest
+		\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Description of the Mariel Boatlift}
+	
+	\begin{itemize}
+	\item In 1980, Fidel Castro allowed anyone to leave Cuba so long as they did in the fall from the Mariel boat dock.
+	\item The Mariel Boatlift brought 100,000 Cubans to Miami which increased the Miami labor force by 7\%
+	\item Card (1990) uses the Mariel Boatlift as a natural experiment to measure the effect of a sudden influx of immigrants on unemployment among less-skilled natives
+	\item His question was how do inflows of immigrants affect the wages and employment of natives in local US labor markets?
+	\item Individual-level data on unemployment from the Current Population Survey (CPS) for Miami and comparison cities
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}[plain]
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/boatlift2.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}[plain]
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/boatlift3.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}[plain]
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/boatlift4.png}
+	\end{figure}
+\end{frame}
+
+
+
+\begin{frame}{Selecting control groups}
+
+\begin{itemize}
+
+\item His treatment group was low skill workers in Miami since that's where Cubans went
+\item But which control group?
+\item He chose Atlanta, Los Angeles, Houston, Tampa-St. Petersburg
+
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Why these four?}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/card_illr.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Diff-in-diff}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_2.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Parallel trends}
+
+\begin{itemize}
+\item Card's analysis used diff-in-diff to estimate the impact of the Mariel boatlift on domestic labor markets
+\item His estimate is unbiased if $\Delta E[Y^0]$ for the comparison cities approximates the counterfactual $\textcolor{violet-red}{\Delta E[Y^0]}$ for the treatment group
+\item Card selected his controls based on a mixture of matching logic (e.g., covariates) and trend logic (e.g., employment growth) but does not report much
+\item Black result would have been positive, too, were it not that the comparison cities growth was twice as large
+\item Creates uncertainty about his null result -- was it no effect or was it the control group?
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Synthetic Control}
+	
+	\begin{itemize}
+	\item Abadie and Gardeazabal (2003) introduced synthetic control in the AER in a study of a terrorist attack in Spain (Basque Country) on GDP
+	\item Revisited again in a 2010 JASA with Diamond and Hainmueller, two political scientists who were PhD students at Harvard (more proofs and inference)
+	\item Basic idea is to use a combination of comparison units as counterfactual for a treated unit where the units are chosen according to a data driven procedure
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Researcher's objectives}
+
+\begin{itemize}
+	\item Synthetic control is a constrained minimization problem where the target goal is the minimization of a vector of squared gaps in pre-treatment characteristics
+	\item Choice vector is an endogenous weights that are constant per control group unit over time and range from [0,1). 
+	\item Our goal here is to reproduce the counterfactual of a treated unit by finding the combination of untreated units that best resembles the treated unit \emph{before} the intervention in terms of the values of $k$ relevant covariates (predictors of the outcome of interest)
+	\item Method selects \emph{weighted average of all potential comparison units} that best resembles the characteristics of the treated unit(s) - called the ``synthetic control''
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Synthetic control method: advantages}
+	
+	\begin{itemize}
+	\item ``Convex hull'' means synth is a non-negatively weighted average of donor pool units that on closely resemble the treatment group over time.
+	\item Constraints on the model use non-negative weights which does not allow for extrapolation 
+	\item Makes explicit the contribution of each comparison unit to the counterfactual 
+	\item Formalizing the way comparison units are chosen has direct implications for inference
+	\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}{Notation and setup}
+	
+Suppose that we observe $J+1$ units in periods $1, 2, \dots, T$
+		\begin{itemize}
+		\item Unit ``one'' is exposed to the intervention of interest (that is, ``treated'') during periods $T_0+1, \dots, T$
+		\item The remaining $J$ are an untreated reservoir of potential controls (a ``donor pool'')
+		\end{itemize}	
+\end{frame}
+
+
+\begin{frame}{Potential outcomes notation}
+
+		\begin{itemize}
+		\item Let $Y_{it}^0$ be the outcome that would be observed for unit $i$ at time $t$ in the absence of the intervention
+		\item Let $Y_{it}^1$ be the outcome that would be observed for unit $i$ at time $t$ if unit $i$ is exposed to the intervention in periods $T_0+1$ to $T$.
+		\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Group-time ATT with only one treated group}
+
+Treatment effect parameter is defined as dynamic ATT where 
+
+\begin{eqnarray*}
+\delta_{1t}&=&Y_{1t}^1 - Y_{1t}^0 \\
+&=& Y_{1t} - Y_{1t}^0 
+\end{eqnarray*} for each post-treatment period, $t>T_0$ and $Y_{1t}$ is the outcome for unit one at time $t$. We will estimate $Y^0_{1t}$ using the $J$ units in the donor pool 
+
+\end{frame}
+
+\begin{frame}{Optimal weights}
+	
+	\begin{itemize}
+	\item Let $W=(w_2, \dots, w_{J+1})'$ with $w_j\geq 0$ for $j=2, \dots, J+1$ and $w_2+\dots+w_{j+1}=1$. Each value of $W$ represents a potential synthetic control
+	\item Let $X_1$ be a $(k\times 1)$ vector of pre-intervention characteristics for the treated unit.  Similarly, let $X_0$ be a $(k\times J)$ matrix which contains the same variables for the unaffected units.
+	\item The vector $W^*=(w_2^*, \dots, w_{J+1}^*)'$ is chosen to minimize $||X_1-X_0W||$, subject to our weight constraints
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Optimal weights differ by another weighting matrix}
+	
+Abadie, et al. consider $$||X_1 - X_0W||=\sqrt{(X_1-X_0W)'V(X_1-X_0W)}$$where $X_{jm}$ is the value of the $m$-th covariates for unit $j$ and $V$ is some $(k\times k)$ symmetric and positive semidefinite matrix
+
+\end{frame}
+
+\begin{frame}{Similarity to distance minimization}
+
+\begin{itemize}
+\item Bears some resemblance to nearest neighbor matching though I don't want to oversell that
+\item There is a unique solution that selects weighting minimizing the distance between the covariates comparison characteristics and treatment group
+\item Let's look at an example from nearest neighbor matching of minimizing Euclidean distance to help firm the ideas
+\item \url{https://docs.google.com/spreadsheets/d/1iro1Qzrr1eLDY_LJVzOYvnQZWmxY8JyTcDf6YcdhkwQ/edit?usp=sharing}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Illustration of the "optimal weight"}
+
+\begin{figure}
+\includegraphics[scale=0.25]{./lecture_includes/synth_optimal_weight}
+\end{figure}
+
+\end{frame}
+
+
+
+\begin{frame}{More on the V matrix}
+
+Typically, $V$ is diagonal with main diagonal $v_1, \dots, v_k$.  Then, the synthetic control weights $w_2^*, \dots, w_{J+1}^*$ minimize: $$\sum_{m=1}^k v_m \bigg(X_{1m} - \sum_{j=2}^{J+1}w_jX_{jm}\bigg)^2$$ where $v_m$ is a weight that reflects the relative importance that we assign to the $m$-th variable when we measure the discrepancy between the treated unit and the synthetic controls
+
+\end{frame}
+
+\begin{frame}{Choice of $V$ is critical}
+	
+		\begin{itemize}
+		\item The synthetic control $W^*(V^*)$ is meant to reproduce the behavior of the outcome variable for the treated unit in the absence of the treatment
+		\item Therefore, the $V^*$ weights directly shape $W^*$
+		\end{itemize}
+\end{frame}
+
+\begin{frame}{Estimating the $V$ matrix}
+	
+ Choice of $v_1, \dots, v_k$ can be based on
+		\begin{itemize}
+		\item Assess the predictive power of the covariates using regression
+		\item Subjectively assess the predictive power of each of the covariates, or calibration inspecting how different values for $v_1, \dots, v_k$ affect the discrepancies between the treated unit and the synthetic control
+		\item Minimize mean square prediction error (MSPE) for the pre-treatment period (default):
+			\begin{eqnarray*}
+			\sum_{t=1}^{T_0} \bigg(Y_{1t} - \sum_{j=2}^J w_j^*(V^*)Y_{jt} \bigg)^2
+			\end{eqnarray*}
+		\end{itemize}
+\end{frame}
+
+\begin{frame}{Cross validation}
+
+\begin{itemize}
+		\item Abadie recommends cross validation for selecting the covariates
+		\item Divide the pre-treatment period into an initial \textbf{training} period and a subsequent \textbf{validation} period
+		\item For any given $V$, calculate $W^*(V)$ in the training period.
+		\item Minimize the MSPE of $W^*(V)$ in the validation period
+\end{itemize}
+
+\bigskip
+
+Let's look at an example from the 2010 JASA paper with Hainmueller and Diamond
+
+\end{frame}
+
+
+
+\begin{frame}{Example: California's Proposition 99}
+	
+	\begin{itemize}
+	\item In 1988, California first passed comprehensive tobacco control legislation:
+		\begin{itemize}
+		\item increased cigarette tax by 25 cents/pack
+		\item earmarked tax revenues to health and anti-smoking budgets
+		\item funded anti-smoking media campaigns
+		\item spurred clean-air ordinances throughout the state
+		\item produced more than \$100 million per year in anti-tobacco projects
+		\end{itemize}
+	\item Other states that subsequently passed control programs are excluded from donor pool of controls (AK, AZ, FL, HI, MA, MD, MI, NJ, OR, WA, DC)
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Cigarette Consumption: CA and the Rest of the US}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_3.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Cigarette Consumption: CA and synthetic CA}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_4.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Sparsity and Synthetic Control Weights}
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/synth_smoking_table2.png}
+	\end{figure}
+\end{frame}
+
+
+
+\begin{frame}{Predictor Means: Actual vs. Synthetic California}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_5.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Smoking Gap between CA and synthetic CA}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_6.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Inference}
+	
+	\begin{itemize}
+	\item To assess significance, we calculate exact p-values under Fisher's sharp null using a test statistic equal to after to before ratio of RMSPE
+	\item Exact p-value method
+		\begin{itemize}
+		\item Iteratively apply the synthetic method to each country/state in the donor pool and obtain a distribution of placebo effects
+		\item Compare the gap (RMSPE) for California to the distribution of the placebo gaps. For example the post-Prop. 99 RMSPE is: 
+			\begin{eqnarray*}
+			RMSPE = \bigg(\frac{1}{T-T_0} \sum_{t=T_0+1}^T \bigg(Y_{1t} - \sum_{j=2}^{J+1} w_j^* Y_{jt}\bigg)^2 \bigg)^{\frac{1}{2}}
+			\end{eqnarray*}and the exact p-value is the treatment unit rank divided by $J$
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Smoking Gap for CA and 38 control states}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_7.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Smoking Gap for CA and 34 control states}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_8.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Smoking Gap for CA and 29 control states}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_9.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Smoking Gap for CA and 19 control states}
+	
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_10.pdf}
+	\end{figure}
+\end{frame}
+
+\begin{frame}{Ratio Post-Prop. 99 RMSPE to Pre-Prop. 99 RMSPE}
+
+	\begin{figure}
+	\includegraphics[scale=0.75]{./lecture_includes/abadie_11.pdf}
+	\end{figure}
+\end{frame}
+
+
+
+
+\begin{frame}{Replication exercise}
+	
+	\begin{itemize}
+	\item The US has the highest prison population of any OECD country in the world 
+	\item 2.1 million are currently incarcerated in US federal and state prisons and county jails
+	\item Another 4.75 million are on parole
+	\item From the early 1970s to the present, incarceration and prison admission rates quintupled in size
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[plain]
+
+\begin{figure}
+\includegraphics[scale=0.5]{./lecture_includes/cook2010.pdf}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Prison constraints}
+
+	
+	\begin{itemize}
+	\item Prisons are and have been at capacity for a long time so growth in imprisonment would bite on state corrections
+	\item Managing increased flows can only be solved by the following:
+		\begin{itemize}
+		\item Prison construction
+		\item Overcrowding
+		\item Paroles
+		\end{itemize}
+	\item Texas chooses overcrowding
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Ruiz v. Estelle 1980}
+
+	
+	\begin{itemize}
+		\item Class action lawsuit against TX Dept of Corrections (Estelle, warden). 
+		\item TDC lost.  Lengthy period of appeals and legal decrees.  
+		\item Lengthy period of time relying on paroles to manage flows
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[scale=0.8]{./lecture_includes/flow_rate_figure.pdf}
+\end{frame}
+
+\begin{frame}{Texas prison boom}
+
+Governor Ann Richards (D) 1991-1995
+		\begin{itemize}
+		\item Operation prison capacity increased 30-35\% in 1993, 1994 and 1995. 
+		\item Prison capacity increased from 55,000 in 1992 to 130,000 in 1995.  
+		\item Building of new prisons (private and public)
+		\end{itemize} 
+\end{frame}
+
+
+\begin{frame}[shrink=30,plain]
+
+\begin{figure}
+\includegraphics{./lecture_includes/tdcj.pdf}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}[shrink=30,plain]
+\begin{figure}
+\includegraphics{./lecture_includes/capacity_operational_texas.pdf}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}[shrink=30,plain]
+
+\begin{figure}
+\includegraphics{./lecture_includes/total_incarceration.pdf}
+\end{figure}
+\end{frame}
+
+\begin{frame}[shrink=30,plain]
+
+\begin{figure}
+\includegraphics{./lecture_includes/synth_placebo_totalincarceration1993.pdf}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Coding together}
+
+\begin{itemize}
+\item Let's go to Mixtape Sessions repository now into /Labs/Texas 
+\item I'll walk us through the Stata and R code so you understand the syntax and underlying logic
+\item But then I have us a practice assignment 
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Avoiding Cherry Picking: Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_8.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_1.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_2.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/subway_3.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/subway_4.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.35]{./lecture_includes/subway_5.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.35]{./lecture_includes/subway_6.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Cherry picking synthetic controls}
+
+\begin{itemize}
+\item Abadie, et al. recommended a nested minimization problem using the preintervention data to estimate the SC weights, but very little to no guidance was provided beyond that
+\item Historically, a broad range of selection of pre-treatment characteristics were used by early researchers which created researcher degrees of freedom or ``cherry picking synthetic controls''
+\item Ferman, Pinto and Possbaum (2020) suggest specific specifications and report all of them with and without covariates
+\item Here's an example of the kinds of tables and graphical evidence they suggested researchers follow (followed by what we did)
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Show p-values across all recommended specifications}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/cherry_picking_1.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Show event study (not placebo) across all recommended specifications}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/cherry_picking_2.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_robustness.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Subway franchise and Scandal}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/subway_7.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Summarizing}
+
+\begin{itemize}
+
+\item Method is simple: take donor pool units and find a combination of units, weight them, that minimize a distance function subject to two weight constraints $W*$ and $V*$.
+\item But what is the bias and what can we do when we think the bias is severe?
+\item We now move towards that now by examining the nature of the bias in synthetic control
+\end{itemize}
+
+\end{frame}
+
+\section{Imperfect fit}
+
+\subsection{Bounding the bias}
+
+\begin{frame}{Suppose $Y^0$ is given by a factor model}
+
+
+\begin{itemize}
+\item What about unmeasured factors affecting the outcome variables as well as heterogeneity in the effect of observed and unobserved factors?
+
+\item Abadie, et al. assume that the missing potential outcome, $Y^0_{it}$, is generated using a factor model
+
+\begin{eqnarray*}
+Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
+\end{eqnarray*}
+
+%where $\alpha_t$ is an unknown common factor with constant factor loadings across units, and $\lambda_t$ is a vector of unobserved common factors
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Factor Model Intuition}
+  Untreated potential outcomes are given by a factor model:
+  \begin{equation}\label{eq:untreated_po}
+    Y_{it}^0 = \alpha_t + \theta_t Z_i + \textcolor{navy}{\lambda_t} \textcolor{orange}{u_i} + \varepsilon_{it}
+  \end{equation}
+
+  \begin{itemize}
+ \item $Z_i$ is observed features, $u_i$ is unobserved features, $\varepsilon_{it}$ is unit-level transitory shock
+    \item $\lambda_t$ is the set of \textcolor{navy}{factors} (macroeconomic shock) at time $t$.
+    \item $u_i$ is unit i's \textcolor{orange}{factor loading} (exposure) to the shocks.
+  \end{itemize}
+
+  For example, $\lambda_t$ is a shock to the returns to technological ability and $u_i$ is unobserved ability.
+\end{frame}
+
+
+\begin{frame}{Factor Model Intuition}
+  Untreated potential outcomes are given by a factor model:
+  \begin{equation}\label{eq:untreated_po}
+    Y_{it}^0 = \alpha_t + \theta_t Z_i + \textcolor{navy}{\lambda_t} \textcolor{orange}{u_i} + \varepsilon_{it}
+  \end{equation}
+
+
+Suppose we found $W^*$ such that:
+
+ $$\sum^{J+1}w^*_jY_{jt}=Y_{1t}$$ $$\sum^{J+1}w^*_jZ_{j}=Z_{1}$$ and so on. This may only hold approximately in your sample. If you're able to do that, then you can establish a bound on the bias of the estimator.
+
+\end{frame}
+
+
+\begin{frame}{Synthetic Control Bias Under Factor Model}
+
+\begin{eqnarray*}
+  Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
+  ^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
+  && - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
+\end{eqnarray*}
+
+\begin{itemize}
+  \item If $\sum_{t=1}^{T_0} \lambda_t' \lambda_t$ is nonsingular, then RHS will be close to zero if number of preintervention periods is ``large''  relative to size of transitory shocks 
+  \item Only units that are alike in observables and unobservables should produce similar trajectories of the outcome variable over extended periods of time
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Synthetic control bounds}
+
+\begin{itemize}
+  \item Abadie, et al. 2010 shows the bounds on the bias and it is based on how closely you're able to fit the synthetic control to the treatment group over time
+  \item Bias bound is controlled by a ratio between the scale of the transitory shocks, $\varepsilon_{it}$, and the time length
+  \item Your credibility of a synthetic control depends on the extent to which it is able to fit a trajectory  $Y_{1t}$ for an extended pre-intervention period
+  \item The idea is that on the shorter series, you're fitting noise ($\varepsilon$) not the factor model
+ \end{itemize}
+ 
+ \end{frame}
+
+
+
+\begin{frame}{Example of long $T_0$ and transitory shocks}
+
+	\begin{figure}
+	\includegraphics[scale=0.25]{./lecture_includes/restud_titlepage}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Example of long $T_0$ and transitory shocks}
+
+	\begin{figure}
+	\includegraphics[scale=0.20]{./lecture_includes/restud_rapesynth}
+	\end{figure}
+
+\end{frame}
+
+
+
+
+\begin{frame}{ Synthetic Control Bias Under Factor Model}
+  Synthetic control will do well when you have many time-periods because:
+  \begin{enumerate}
+    \item You will not fit on the error term $\varepsilon_{it}$ 
+    \item Instead, you will find a synthetic control with the same \emph{exposure} to aggregate shocks (matching on factor-loadings)
+  \end{enumerate}
+
+  \bigskip
+  But what about when we don't have good fit?
+\end{frame}
+
+\subsection{Demeaned Synthetic Control}
+
+\begin{frame}{From Abadie, et al. (2010)}
+
+	\begin{figure}
+	\includegraphics[scale=0.40]{./lecture_includes/abadie_imperfect_fit}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Ferman and Pinto (2021)}
+
+	\begin{figure}
+	\includegraphics[scale=0.20]{./lecture_includes/ferman_pinto2021}
+	\end{figure}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{Imperfect pre-treatment fit }
+
+\begin{itemize}
+
+\item Ferman and Pinto (2021) show that synthetic control will generally be biased if treatment assignment is correlated with an unobserved confounder even in very long pre-treatment periods
+
+\item ``This happens because, in this setting, the SC weights converge to weights that simultaneously attempt to match the factor loadings of the treated unit and to minimize the variance of a linear combination of the idiosyncratic shocks.'' (Ferman and Pinto 2021)
+
+\item So even if you reconstructed the pre-trends with your synth, you may not have recovered the true weights because you'd need a comparison group that was affected by the dynamic confounder in exactly the same way, just not treated
+
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Demeaning to address bias}
+
+\begin{itemize}
+\item Ferman and Pinto (2021) show that the synthetic control estimator converges to the parameter we want \emph{plus linear} combinations of contemporaneous idiosyncratic shocks and common factors
+\item If you assume the idiosyncratic factors cancel out in large samples, then the bias will depend on the differences in how the treated and the synthetic control units are affected by the common shocks
+\item They show that it is generally unbiased under the same conditions as diff-in-diff, and can have lower asymptotic variance, but they recommend showing then both diff-in-diff and demeaned synthetic control
+
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{}
+
+\begin{figure}
+\includegraphics[scale=0.25]{./lecture_includes/restud_dd}
+\end{figure}
+
+\end{frame}
+
+
+
+\begin{frame}{Demeaning to address bias}
+
+\begin{itemize}
+
+\item Cannot compare the original synthetic control with the demeaned synthetic control in terms of bias and variance -- if units with similar factor loadings have similar fixed effects, then matching on levels would be better than demeaning 
+\item Demeaning can increase the variance in finite pre-treatment
+\item Demeaning also implies extrapolating which is often considered to be one of the hallmark strengths of the original synthetic control estimator -- it does not extrapolate 
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{What did we do?}
+
+\begin{itemize}
+\item Our Rhode Island paper began in 2009 and was published in 2018, with working papers in circulation in 2014, well before this imperfect literature
+\item One of our main outcomes was reported female rape offenses per 100,000 as measured in the Uniform Crime Reports 
+\item Rhode Island is a small state so even relatively modest changes year to year in reported rape offenses caused meaningful swings in the outcome series
+\item Our solution was to ``smooth'' using a moving average of each two years -- which was not a demeaning, but rather simply $\frac{Y_t + Y_{t+1}}{2}$
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\subsection{Augmented Synthetic Control}
+
+\begin{frame}{More on imperfect fit}
+
+\begin{itemize}
+\item Ferman and Pinto start this literature on imperfect fit, but it continued
+\item Next we examine relaxing the convexity requirement
+\item There had been an earlier paper by Doudchenko and Imbens that was never published that tried to add a constant so you can be off the convex hull
+\item But this next one will use negative weights
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Augmented Synthetic Control}
+\begin{itemize}
+\item Synthetic control has built in constraints forcing weights to be non-negative
+\item Convex hull constraint ensures that synth is a feasible counterfactual in that it is formed by a combination of control units similar on pre-intervention characteristics
+\item Improves the validity of the estimated effect as there exists interpolated comparison group; similar to common support concept
+\item But, the convex hull constraint reduces extrapolation bias from comparing dissimilar units, but at the cost of failing to find matches at all
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{What is augmented synthetic control?}
+
+\begin{itemize}
+\item Eli Ben-Michael, Avi Feller and Jesse Rothstein present a modification to ADH in which they allow for negative weights, but only minimally so
+\item Model will ``augment'' the original synthetic control model by adjusting for pre-treatment imbalance using doubly robust bias adjustment (Abadie and Imbens 2011)
+\item Augmentation is conservative negative re-weighting using \textbf{penalized ridge regression} with constraints such that the negative weighting is only to the convex hull, not to the center of the convex hull (does not over-weight)
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Summarizing the argument}
+
+\begin{enumerate}
+\item[1. ] Original synthetic control needs perfect fit and so will be biased in practical settings as it won't be the case we get weights constrained to be  on the convex hull
+\item[2. ] Augmentation of the synthetic control estimator uses an outcome model to estimate the bias caused by covariate imbalance 
+\item[3. ] Outcome model is a penalized ridge regression which will provide new weights we use to reweight the original synthetic control (bias adjustment in the spirit of Abadie and Imbens (2011)
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}{Summarizing the argument}
+
+\begin{enumerate}
+\item[4. ] When synth is imbalanced, augmented synth will reduce bias reweighting and bias correction, and when synth is balanced, they are the same
+\item[5. ] When synth is balanced, the augmented and original synth are identical (but in practice, they won't be identical)
+\item[6. ] They argue synth DiD can be seen as a special case of augmented synth
+\end{enumerate}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}{Notation}
+
+\begin{itemize}
+\item Observe $J+1$ units over $T$ time periods
+\item Unit $1$ will be treated at time period $T_0=T-1$ (we allow for unit $1$ to be an average over treated units)
+\item Units $j=2 $ to $J+1$ (using ADH original notation) are ``never treated''
+\item $D_j$ is the treatment indicator
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[plain,shrink=20]
+\begin{center}
+\textbf{Pre-treatment outcomes}
+\end{center}
+
+\begin{center}
+\[ \left( \begin{array}{ccccc}
+    Y_{11} & Y_{12} & Y_{13} & \dots  & Y_{1T}^1 \\
+    Y_{21} & Y_{22} & Y_{23} & \dots  & Y_{2T}^0  \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y_{N1} & Y_{i2} & Y_{i3} & \dots  & Y_{NT}^0
+\end{array} \right) \equiv
+\left( \begin{array}{ccccc}
+    X_{11} & X_{12} & X_{13} & \dots  & Y_{1} \\
+    X_{21} & X_{22} & X_{23} & \dots  & Y_{2}  \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    X_{N1} & X_{i2} & X_{i3} & \dots  & Y_{N}
+\end{array} \right) \equiv
+\left( \begin{array}{cc}
+    X_{1} & Y_{1} \\
+    X_{0} & Y_{0}  \\
+\end{array} \right)
+\]
+
+\end{center}
+
+This is a model of 2x2 (i.e., single last period block structure, not staggered roll out)
+
+\bigskip
+
+The last column is always post-treatment and switches from $Y^1$ to $Y$. 
+
+\bigskip
+
+The last column is just showing a top row of the treated unit 1 and the bottom row of all the donor pool (i.e., we will use $X_0$ and $Y_0$ to represent all the donor pool units)
+
+\end{frame}
+
+
+\begin{frame}{Optimal weights}
+
+Synth minimizes the following norm:
+
+\begin{eqnarray*}
+\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
+\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
+\end{eqnarray*}
+
+$Y_0'w*$ (i.e., optimally weighted donor pool) is the unit 1 ``synthetic control'' 
+
+\end{frame}
+
+
+\begin{frame}{Predicting counterfactuals}
+
+Synth minimizes the following norm:
+
+\begin{eqnarray*}
+\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
+\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
+\end{eqnarray*}
+
+We are hoping that $\widehat{Y}_1^0$ with $Y_0' {w}^{*}$ based on ``perfect fit'' pre-treatment
+
+\end{frame}
+
+
+
+
+\begin{frame}{$V_X$ matrix}
+
+Synth minimizes the following norm:
+
+\begin{eqnarray*}
+\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
+\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
+\end{eqnarray*}
+
+$V_x$ is the ``importance'' matrix on $X_0$ (Stata default chooses $V_x$ that min pre-treatment MSE).
+\end{frame}
+
+\begin{frame}{Penalizing the weights with ridge}
+
+Synth minimizes the following norm:
+
+\begin{eqnarray*}
+\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
+\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
+\end{eqnarray*}
+
+Modification to the original synthetic control model is the inclusion of the penalty term. ``The choice of penalty is less central when weights are constrained to be on the simplex, but becomes more important when we relax this constraint.''
+
+\end{frame}
+
+\begin{frame}{Convex hull}
+
+Synth minimizes the following norm:
+
+\begin{eqnarray*}
+\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
+\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
+\end{eqnarray*}
+
+These weights will be used to address imbalance, not so much the control units, bc this method is for when the weighted controls are still outside the convex hull
+
+\end{frame}
+
+
+
+
+\begin{frame}{Original ADH factor model and bias}
+
+\begin{eqnarray*}
+Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
+\end{eqnarray*}
+
+\bigskip
+
+Original synth factor model (with ADH notation)
+
+\bigskip
+
+\begin{eqnarray*}
+Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
+^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
+&& - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
+\end{eqnarray*}
+
+\bigskip
+
+The bias of ADH synthetic control
+
+
+\end{frame}
+
+
+
+
+\begin{frame}{Perfect fit is necessary}
+
+\begin{eqnarray*}
+Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
+^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
+&& - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
+\end{eqnarray*}
+
+\bigskip
+
+Recall that the bias of ADH required ``perfect fit'' using their factor model (I'll change $\lambda$ factor loadings in a minute)
+
+\end{frame}
+
+
+
+
+\begin{frame}{Perfect fit models heterogeneity}
+
+
+\begin{eqnarray*}
+Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
+^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
+&& - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
+\end{eqnarray*}
+
+Only units that are alike in observables and unobservables should produce similar trajectories of the outcome variable over extended periods of time
+
+
+\end{frame}
+
+
+\begin{frame}{Remember that ADH15 quote}
+
+\begin{quote}
+``The applicability of the [ADH2010] method requires a sizable number of pre-intervention periods. The reason is that the credibility of a synthetic control depends upon how well it tracks the treated unit’s characteristics and outcomes over an extended period of time prior to the treatment. \textbf{We do not recommend using this method when the pretreatment fit is poor or the number of pretreatment periods is small}. A sizable number of post-intervention periods may also be required in cases when the effect of the intervention emerges gradually after the intervention or changes over time.'' (my emphasis, Abadie, et al. 2015)
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{Slight change in synth notation}
+
+\begin{itemize}
+\item Assume that our outcome, $Y^0_{jt}$, follows a factor model where $m(.)$ are pre-treatment potential outcomes: $$ Y_{jt}^0 = m_{jt} + \varepsilon_{jt}$$
+\item Since $\widehat{m(.)}$ estimates the post-treatment outcome, it can be viewed as an estimate of matching bias
+\item Procedure then becomes analogous to bias correction for inexact matching (Abadie and Imbens 2011)
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Bias correction}
+
+ $$ Y_{jt}^0 = m_{jt} + \varepsilon_{jt}$$
+
+\begin{itemize}
+\item Recall from earlier by Abadie, et al. (2010) and Ferman and Pinto (2021) the same point made which is that as $T$ grows, the synthetic control achieves balance, not by fitting on the idiosyncratic noise (which is on average zero in large samples), but on the unobserved heterogeneity in the factor model
+\item Thus when the weights do achieve exact balance, the bias of synthetic control decreases with $T$
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Common practice}
+
+\begin{itemize}
+\item Usually the number of time periods isn't much larger than the number of units
+\item And exact balance rarely holds, which if it doesn't hold, then the unobserved heterogeneity also doesn't get deleted even with large $T$
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Treatment and control units}
+
+	\begin{figure}
+	\includegraphics[scale=0.07]{./lecture_includes/convexhull_1.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Convex hull -- ideal for synth}
+
+	\begin{figure}
+	\includegraphics[scale=0.07]{./lecture_includes/convexhull_2.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Outside the convex hull bc of dimensionality}
+
+	\begin{figure}
+	\includegraphics[scale=0.07]{./lecture_includes/convexhull_3.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Outside the convex hull bc of dimensionality}
+
+	\begin{figure}
+	\includegraphics[scale=0.07]{./lecture_includes/convexhull_4.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Estimating the bias}
+
+\begin{itemize}
+\item Adjust the synthetic control to adjust for poor fit pre-treatment with an estimate of the ``matching bias'' for both the treatment group and the weighted average donor pools (Abadie and Imbens 2011)
+\item We will use our outcome regression model, $\widehat{m}_{jT}$, to estimate the post-treatment potential outcome $Y_{jT}^0$ which is recall unobserved for treatment group
+\item So there is in other words two steps involved: estimate the synthetic control finding optimal donor pool weights, then estimate the matching bias using ridge regression and adjust, similar to bias correction in Abadie and Imbens 2011
+\end{itemize}
+
+
+\end{frame}
+
+
+
+
+\begin{frame}{Setup of the estimator}
+
+$Y_1^{aug,0}$ is the augmented potential outcome based on synthetic control (first term) and adjustments for matching imbalance (second and third terms):
+
+\begin{eqnarray*}
+Y_1^{aug,0} &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{j} + \widehat{m}(X_1) - \sum_{D_j=0} \widehat{w}_j \widehat{m}(X_j) \\
+&=& \widehat{m}(X_1) + \sum_{D_j=0} \widehat{w_j}(Y_j - \widehat{m}(X_j))
+\end{eqnarray*}
+
+\end{frame}
+
+
+\begin{frame}{Interpreting line 1}
+
+\begin{eqnarray*}
+Y_1^{aug,0} &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
+&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
+\end{eqnarray*}
+
+(1) Note how in the first line the traditional synthetic control weighted outcomes are corrected by the imbalance in a particular function of the pre-treatment outcomes $\widehat{m}$. 
+\end{frame}
+
+
+
+
+\begin{frame}{Interpreting line 1}
+
+\begin{eqnarray*}
+Y_1^{aug,0}  &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
+&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
+\end{eqnarray*}
+
+(1) Since $\widehat{m}$ estimates the post-treatment outcome, we can view this as an estimate of the bias due to imbalance, which is similar to how you address imbalance in matching with a bias correction formula (Abadie and Imbens 2011). 
+
+\end{frame}
+
+
+
+
+\begin{frame}{Interpreting line 1}
+\begin{eqnarray*}
+Y_1^{aug,0}  &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
+&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
+\end{eqnarray*}
+
+(1) So if the bias is small, then synthetic control and augmented synthetic control will be similar because that interior term will be zero.
+
+\end{frame}
+
+\begin{frame}{Interpreting line 2}
+
+\begin{eqnarray*}
+Y_1^{aug,0}  &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
+&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
+\end{eqnarray*}
+
+(2) The second line is a double robust representation of the estimator equal to a regression based outcome model plus weighted residuals
+
+
+\end{frame}
+
+\begin{frame}{Form of outcome model}
+
+\begin{itemize}
+
+\item To estimate $\widehat{m}$, recall it is an extrapolation of $Y^0$ based on covariates $X$ (ignoring subscripts)
+\item But this can have overfitting problems, so they introduce a ridge regression
+\item Issue will be with regards to the hyperparameter so they'll suggest cross validation
+\item It's inside this second ``reweighting'' stage (or bias adjustment) that the negative weighting comes and it comes from the outcome model itself extrapolating
+
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Ridge Augmented SCM}
+
+\begin{eqnarray*}
+\textrm{arg min}_{\eta_0,\eta} \frac{1}{2} \sum_{D_j=0} (Y_j - (\eta_0 + X_j'\eta))^2 + \lambda^{ridge} || \eta ||_2^2
+\end{eqnarray*}Here we estimate $\widehat{m}(X_j)$ with ridge regularized linear model and penalty hyper parameter $\lambda^{ridge}$. Sorry -- this is not the same $\lambda$. I didn't create this notation though! Once we have those, we adjust for imbalance using the $\widehat{\eta}^{ridge}$ parameter as a weight on the outcome model itself. 
+
+\end{frame}
+
+\begin{frame}{Ridge Augmented SCM}
+
+\begin{eqnarray*}
+\textrm{arg min}_{\eta_0,\eta} \frac{1}{2} \sum_{D_j=0} (Y_j - (\eta_0 + X_j'\eta))^2 + \lambda^{ridge} || \eta ||_2^2
+\end{eqnarray*}Once we have those, we adjust for imbalance using the $\widehat{\eta}^{ridge}$ parameter as a weight on the outcome model itself. 
+
+\end{frame}
+
+
+
+
+\begin{frame}{Go back to that weighting but use the ridge parameters}
+
+\begin{eqnarray*}
+Y_1^{aug,0} &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{j} + \bigg ( X_1 - \sum_{D_j=0} \widehat{w}_j^{synth} X_j \bigg ) \widehat{\eta}^{ridge} \\
+&=& \sum_{D_j=0} \widehat{w}_j^{aug}Y_j
+\end{eqnarray*}What you're trying to do is adjust with the $\widehat{w}_j^{aug}$ weights to improve balance.  
+
+\end{frame}
+
+
+\begin{frame}{The ridge weights are key to the augmentation}
+
+\begin{eqnarray*}
+\widehat{w}_j^{aug} = \widehat{w}_j^{synth} + (X_j - X_0' \widehat{w}_j^{synth}) ' (X_0'X_0 + \lambda I_{T_0})^{-1}X_i
+\end{eqnarray*}
+
+The second term is adjusting the original synthetic control weights, $w_j^{synth}$ for better balance. Again remember -- we are trying to address the bias due to imbalance. You can achieve better balance, but at higher variance and can introduce negative weights. 
+
+\end{frame}
+
+
+
+\begin{frame}{Ridge will allow negative weights via extrapolation}
+
+\begin{eqnarray*}
+\widehat{w}_j^{aug} = \widehat{w}_j^{synth} + (X_j - X_0' \widehat{w}_j^{synth}) ' (X_0'X_0 + \lambda I_{T_0})^{-1}X_i
+\end{eqnarray*}
+
+Relaxing the constraint from synth that weights be non-negative, as non-negative weights prohibit extrapolation. But we don't have synthetic control on the simplex, so we \emph{must} extrapolate, otherwise synth will be biased.
+
+\end{frame}
+
+
+
+\begin{frame}{Summarizing and some comments}
+
+\begin{itemize}
+\item When the treated unit lies in the convex hull of the control units so that the synth weights exactly balance lagged outcomes, then SCM and Ridge ASCM are the same
+\item When synth weights do not achieve exact balance, Ridge ASCM will use negative weights to extrapolate from the convex hull to the control units
+\item The amount of extrapolation will be determined by how much imbalance we're talking about and the estimated hyperparameter $\widehat{\lambda}^{ridge}$
+\item When synth has good pre-treatment fit or when $\lambda^{ridge}$ is large, then adjustment will be small and the augmented weights will be close to the SCM weights
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Intuition}
+
+Ridge begins at the center of control units, while Ridge ASCM begins at the synth solution. Both move towards an exact fit solution as the hyperparameter is reduced. It is possible to achieve the same level of balance with non-negative weights.  Both ridge and Ridge ASCM extrapolate from the support of the data to improve pre-treatment fit relative to synth alone. Let's look at a picture!
+
+
+\end{frame}
+
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/aug_1.png}
+	\end{figure}
+	
+\end{frame}	
+
+
+\begin{frame}{Conformal Inference}
+
+Inference will be based on ``conformal inference'' method by Chernozhukov et al. (2019).  We will get 95\% point-wide confidence intervals. They also outline a jackknife method by Barber et al (2019). 
+
+\end{frame}
+
+
+\begin{frame}{Steps of conformal Inference}
+
+\begin{enumerate}
+\item [1] Choose a sharp null (i.e., no unit-level treatment effects, $\delta_0=0$)
+	\begin{itemize}
+	\item Enforce the null by creating an adjusted post-treatment outcome for the treated unit equal to $Y_{1T}-\delta_0$ (in other words, we get CI on the post-treatment outcomes, not the pre-treatment)
+	\item Augment the original dataset to include the post-treatment time period $T$ with the adjusted outcome and use the estimator to obtain the adjusted weights $\widehat{w(\delta_0)}$
+	\item Compute a p-value by assessing whether the adjusted residual conforms with the pre-treatment residuals (see Appendix A for the exact formula)
+	\end{itemize}
+\end{enumerate}
+
+
+\end{frame}
+
+
+\begin{frame}{Steps of conformal Inference}
+
+\begin{enumerate}
+\item [2] Compute a level $\alpha$ for $\delta$ by inverting the hypothesis test (see Appendix A for the exact formula)
+	\begin{itemize}
+	\item Chernozhukov et al. (2019) provide several conditions for which approximate or exact finite-sample validity of the $p$-values (and hence coverage of the predicted confidence intervals) can be achieved)
+	\end{itemize}
+\end{enumerate}
+
+See Appendix A for more details
+
+\end{frame}
+
+
+\begin{frame}{Simulations (summarized)}
+
+\begin{itemize}
+\item They examine the performance of synth against ridge, Augmented synth with ridge regularization, demeaned synth, and fixed effects under four DGP
+\item Augmenting synth with a ridge outcome regression reduces bias relative to synth alone in all four simulations
+\item This underscores the importance of the recommendation Abadie, et al. (2015) make which is that synth should be used in settings with excellent pre-treatment fit
+\item They also examine a real situation involving Kansas tax cuts in 2012
+\end{itemize}
+
+\end{frame}
+
+\imageframe{./lecture_includes/aug_5.png}
+
+\imageframe{./lecture_includes/aug_6.png}
+
+\begin{frame}{Couple of minor points}
+
+\begin{itemize}
+\item Hyper parameter chosen using cross validation
+\item This can be extended to auxiliary covariates as opposed to just lagged outcomes (section 6)
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}{Augmented synth vs original synthetic control}
+
+\begin{itemize}
+\item In conclusion, synthetic control is best when pre-treatment fit is excellent, otherwise it is biased
+\item Synthetic control avoids extrapolation by restricting weights to be non-negative and sum to one
+\item Ridge regression augmentation will allow for a degree of extrapolation to achieve pre-treatment balance and that creates negative weights
+\item Augmented synth will dominate synth in those instances by extrapolating outside the convex hull
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}{Replication}
+
+\begin{itemize}
+\item We will now show code that does it in R and Stata
+	\begin{itemize}
+	\item R: "augsynth" by the authors
+	\item Stata: "allsynth" that does several (including augsynth)
+	\end{itemize}
+\item Two examples to hopefully illustrate the bias and improvements and the lack of bias and no change in another
+	\begin{itemize}
+	\item Smoking: augmented synth improves it
+	\item Prisons: augmented synth does nothing
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\section{Multiple Treated Units and Staggered}
+
+
+
+
+
+\subsection{Matrix completion with nuclear norm}
+
+\begin{frame}{Big idea}
+
+\begin{quote}
+``The main part of the article is about the statistical problem of imputing the missing values of $Y$.  Once these are imputed, we can estimate the causal effect of interest, $\delta$.''
+\end{quote}
+
+\bigskip
+
+\begin{quote}
+``To estimate average causal effect of the treatment on the treated units, we impute the missing potential control outcomes'' -- Athey, et al. (2021)
+\end{quote}
+
+\bigskip
+
+All of causal inference is imputation -- but some methods are more explicit and do so in a way that layers on stronger assumptions than others -- and matrix completion with nuclear norm regularization is one such example. 
+
+
+\end{frame}
+
+\begin{frame}{Overview}
+
+\begin{itemize}
+\item Matrix completion with nuclear norm regularization is a synthetic control estimator developed by Athey, et al. (2010, JASA) that can accommodate a variety of setups
+\item Specifically it unites single period treatments (unconfoundedness assumptions) with single unit treatments (synthetic control)
+\item Uses imputation based on a low rank rank matrix to impute missing counterfactuals of treated units to construct estimates of the ATT
+\item Nuclear norm regularization is used for the imputation (as opposed to lasso or elastic net)
+\item Can accommodate differential timing setups where parallel trends may not hold (see Cunningham, Tripp and DeAngelo 2023, forthcoming JHR)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{What is matrix completion}
+
+\begin{itemize}
+\item Completing a matrix means imputing the correct values for variables with missing values
+\item In causal inference, we are missing potential outcomes (e.g., $Y^0$), and the missingness is caused by treatment assignment
+\item Our target parameter is the ATT, so we are missing $Y^0$ for all treated units
+\end{itemize}
+\end{frame}
+
+\begin{frame}{History of matrix completion}
+
+\begin{itemize}
+\item Open competition by Netflix in 2006 -- winner would get \$1m if they could improve predictive model by ten points on RMSE
+\item Invited a ton of competition -- from MIT teams to regular everyday joes working out of their home office
+\item Everyone was given a database which was then tested by Netflix on a holdout dataset
+\item Quick progress was made followed by very slow advances
+\item Winner was announced in 2009
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Netflix prize}
+
+\begin{itemize}
+\item Gigantic sparsely populated matrix of movies ranked by users
+	\begin{itemize}
+	\item I like \underline{Napoleon Dynamite} and \underline{The Matrix} and you like \underline{The Matrix}
+	\item Should Netflix recommend you watch \underline{Napoleon Dynamite}?
+	\end{itemize}
+\item It was implicitly causal and predictive though -- ``if you are shown \underline{Napoleon Dynamite}, will you like it?'' -- is a causal question
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+
+Here's a matrix of potential outcomes, $Y^0$, representing units at time $t$ that had not been treated. 
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & Y^0_{1t} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & Y^0_{2t} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & Y^0_{it}
+\end{pmatrix}\]
+\end{center}
+
+Now imagine a treatment assignment that assigns treatment in the last period $t$ using the switching equation $Y=DY^1 + (1-D)Y^0$
+
+\end{frame}
+
+\begin{frame}[plain]
+
+Since this is a matrix now of potential outcomes, $Y^0$, we are missing anyone's potential outcome who was treated. 
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & ? \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+Matrix completion with nuclear norm will impute the last column using regularized regression:
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & \widehat{Y^0_{1t}} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & \widehat{Y^0_{2t}} \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & \widehat{Y^0_{it}}
+\end{pmatrix}\]
+\end{center}
+
+And once you have those, you can calculate individual level treatment effects that can be used to aggregate to the ATT
+
+\end{frame}
+
+
+
+\begin{frame}{Commentary about synth imputation vs did imputation}
+
+\begin{itemize}
+\item Important point -- the assumptions in diff-in-diff use parallel trends to do imputation (e.g., Borusyak, et al. (2023), Heckman, Ichimura and Todd (1997)) -- but synthetic control does not
+\item So you can't compare MCNN with Borusyak, et al. (2023) even though both of them are going to be plausible candidates in the same situations and may "feel" the same
+\item Navigating between synthetic control estimators and diff-in-diff estimators when the gaps between their use cases decline to zero will necessarily require understanding the identifying assumptions at a deep level, and it's unclear if there are available tests beyond the event studies to justify their use
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Two literatures}
+
+\begin{itemize}
+\item There's two literatures they want you to have in your mind:
+	\begin{enumerate}
+	\item Unconfoundedness -- $(Y^0,Y^1)\independent D|X$ -- sometimes explicitly imputes (nearest neighbor), sometimes more implicit (inverse probability weighting)
+	\item Synthetic control -- literally calculating a counterfactual as a weighted average over all donor pool units
+	\end{enumerate}
+\item Their MCNN method will show that both are ``nested'' within the general framework they've developed making them actually special cases
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Differences between synth and unconfoundedness}
+
+\begin{itemize}
+\item Conceptually different in the way they exploit patterns for causal inference
+	\begin{itemize}
+	\item Unconfoundedness assumes that \textbf{patterns over time}are stable \emph{across units}
+	\item Synth assumes \textbf{patterns across units} are stable \emph{over time}
+	\end{itemize}
+\item Regularization nests them both and a nuclear norm ensures a low rank matrix needed for sensible imputations
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Factor models again}
+
+\begin{itemize}
+\item Factor models and interactive effects model the observed outcome as the sum of a linear function of covariates and a unobserved component that is a low rank matrix plus noise
+\item Estimates are typically based on minimizing the sum of squared errors given the rank of the matrix of unobserved components with the rank itself estimated
+\item Nuclear norm regularization will be used for imputing the potential outcomes, $Y^0$, for all treated units
+\item Estimate plots and overall ATT using the estimated treatment effects
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Three contributions}
+
+\begin{enumerate}
+\item Formal results for non-random missingness when block structure allows for correlation over time. 
+\item Shows unconfoundedness and synth are in fact matrix completion methods 
+	\begin{itemize} 
+	\item Same objective function, but
+	\item Different sets of restrictions on the factors in the matrix factorization
+	\item MCNN doesn't impose any restrictions -- just regularization to characterize the estimator -- whereas synthetic control imposes convex weights
+	\end{itemize}
+\item Applies the method to two datasets, but I'll show you a recent study of mine in what we chose to do
+\end{enumerate}
+
+\end{frame}
+
+
+\begin{frame}{Block structure}
+
+\begin{itemize}
+\item Lots of new and old terms -- unconfoundedness, vertical and horizontal regression, fat and thin matrices.  
+\item We define the matrix first in terms of its block structure which is describing where and when the missingness is occurring in the matrix
+\item Then we will discuss these concepts related to the direction of the regressions themselves
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Unconfoundedness}
+
+\begin{itemize}
+\item Much of the program evaluation literature estimates an average treatment effect (e.g., ATT) under unconfoundedness (see Lalonde 1986; Dehejia 2002; Smith and Todd 2005)
+\item But the focus is on a simple setup where the missingness is the last period (i.e., the post treatment period)
+\item In LaLonde (1986), NSW treats the workers, and then you don't observe $Y^0$ for the treated group in the \emph{last period}, so you use the comparison group for imputation of missing potential outcomes under presumed unconfoundedness (i.e., randomized within dimensions of $X$)
+\item Athey et al call this the ``single-\textcolor{purple}{treated-period} block structure'' because only one \emph{period} is missing
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Single-treated-period block structure}
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  &Y^0_{1T} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & Y^0_{i3} & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+\end{frame}
+
+
+\begin{frame}{Single-\textcolor{green}{treated-unit} block structure}
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & Y^0_{12} & Y^0_{13} & \dots  & Y^0_{1t} \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & Y^0_{2t}  \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & ? & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+Notice, this is the synthetic control design because a single unit (unit $i$) is missing $Y^0$ for the 3rd and $t$th periods.
+
+\end{frame}
+
+\begin{frame}{Differential timing has a block structure too}
+
+\begin{center}
+\[ Y^0_{it}  =\begin{pmatrix}
+    Y^0_{11} & ? & ? & \dots  & ? \\
+    Y^0_{21} & Y^0_{22} & Y^0_{23} & \dots  & ? \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    Y^0_{i1} & Y^0_{i2} & ? & \dots  & ?
+\end{pmatrix}\]
+\end{center}
+
+So all of these so-called designs can be expressed in terms of missingness in the block structure, and our job therefore is to find an estimator that is general enough to manage all of them.  Matrix completion with nuclear norm regularization is one such example and so has nice generalizations
+
+\end{frame}
+
+
+\begin{frame}{Thin and Fat matrices}
+
+\begin{itemize}
+\item Next we must consider the relative number of panel units $N$ and time periods $T$ because this also shapes which regression style will be used for imputation
+\item Thin matrices are where $N>>T$ (relatively large numbers of units), and fat matrices are ones where $T>>N$ (relatively large numbers of time periods)
+\item Approximately square ones are where $T$ is approximately equal to $N$
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Vertical and horizontal regression}
+
+\begin{itemize}
+\item Unconfoundedness has that single-treated period block structure with a thin matrix ($N>>T$). 
+\item Uses a large number of $N$ units to impute missing potential outcomes in the last period using controls with similar lagged outcomes (horizontal regression)
+\item Horizontal regression holds under unconfoundedness
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Vertical regression}
+
+\begin{itemize}
+\item Doudchenko and Imbens (2016) and Pinto and Furman (2021) show that synthetic control can be interpreted as regressing the outcomes for the treated prior to treatment on the outcomes for controls in the same period
+\item It is as though you are regressing the treatment group outcomes onto the donor pool outcomes (up and down) but with restrictions on what the coefficients can be -- they cannot be negative and they must sum to one
+\item Once synthetic control is framed as a vertical regression, it opens up the possibilities of different model specifications (like including an intercept which will shift the convex hull around which is what Doudchenko and Imbens (2016, unpublished) proposed)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Fixed effects and factor models}
+
+\begin{itemize}
+\item Both horizontal and vertical regressions exploit unique patterns in the data -- one goes left to right, one goes up and down
+\item An alternative to each of them though is to consider an approach that allows for the exploitation of both stable patterns over time and stable patterns across units
+\item Matrix completion with nuclear norm does both (and we will see this again in their synthetic difference-in-differences)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Matrix completion with nuclear norm}
+
+\begin{itemize}
+\item Model the $N \times T$ matrix of complete outcomes data matrix $Y$ as: $$Y = L* + e$$where $E[e|L*]=0$
+\item The error term can be thought of as measurement error if you need a frame to think about it
+\item So you have this complete matrix, L*, and zero mean conditional independence holds
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Assumption regarding error and matrix}
+
+\begin{block}{Matrix assumptions}
+$e$ is independent of $L*$ and the elements of $e$ are $\sigma$-sub-Gaussian and independent of each other
+\end{block}
+
+
+\end{frame}
+
+\begin{frame}{Comment about regularization}	
+	
+\begin{itemize}
+\item You could minimize the sum of squared differences but if the objective function doesn't depend on $L*$, the estimator would just spit back $Y$ and $\delta=0$. 
+\item Authors add a penalty term $||\lambda||$ to the objective function, but even then, not all of them do well. 
+\item It matters matters whether you regularize the fixed effects or not 
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Estimator}
+
+\begin{eqnarray*}
+L* = \widehat{L} + \widehat{\Gamma}1_T^T + I_N\widehat{\Delta}^T
+\end{eqnarray*}where the objective function is:
+
+\begin{eqnarray*}
+= arg\text{ }min_{L,\Gamma,\Delta} \bigg \{ \frac{1}{O} || P_0(Y-L-\Gamma 1_T^T - 1_N\Delta^T)||_F^2 + \Lambda||L|| \bigg \}
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}{Fixed effects and regularization}
+
+\begin{itemize}
+\item The penalty will likely be the nuclear norm but notice that the fixed effects are outside the penalty term.  You could subsume them into $L$, they say, but they recommend you not doing this.
+\item Fraction of observations is relatively high and so the fixed effects can actually be estimated separately (apparently that is one difference between MCNN and the rest of the MC literature)
+\item The penalty will be chosen using cross-validation
+\item One advantage of NN is its fast and convex optimization programs will do it, whereas some others won't because of the large $N$ or $T$ issues
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Parting comments}
+
+\begin{itemize}
+\item Though this model  can be used for differential timing but at the moment, we haven't seen much in terms of contrasting it with the robust diff-in-diff estimators like Borusyak, et al. (2021), Callaway and Sant'Anna (2020) or any of the others
+\item This is going to come down to parallel trends versus the factor models, and communicating the improvements gained with synthetic control as you move away from the simplest comparative case study is likely to be challenging
+\item You choose the estimator based on the problem you're studying and the assumptions -- you must justify it, no one else can, but you do so by appealing to assumptions
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Code}
+
+R: \url{https://github.com/xuyiqing/gsynth}
+
+\bigskip
+
+Stata: fect \url{https://yiqingxu.org/packages/fect/stata/fect_md.html}
+
+\end{frame}
+
+
+
+
+
+\subsection{Synthetic difference-in-differences}
+
+\begin{frame}
+\frametitle{The Basic Idea of SDID}
+
+\begin{itemize}
+    \item Combines ideas from synthetic control and difference-in-differences.
+        \begin{itemize}
+            \item Matches control units to treated units with pre-treatment weights.
+            \item Addresses biases from imperfect matching.
+        \end{itemize}
+    \item Introduces time weights to prioritize key pre-treatment periods.
+    \item Balances precision from synthetic control with broader trends from DID.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{How SDID Works}
+
+\begin{itemize}
+    \item Uses unit and time fixed effects for bias reduction.
+        \begin{itemize}
+            \item Accounts for unit-specific traits (e.g., state-level differences).
+            \item Captures common period effects (e.g., economic booms).
+        \end{itemize}
+    \item Derives time weights directly from the data.
+    \item Flexible tool for causal inference in complex panel data.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Intuition Behind SDID}
+
+\begin{itemize}
+    \item Approximates parallel trends by reweighting data.
+        \begin{itemize}
+            \item Unit weights align control and treated units pre-treatment.
+            \item Time weights balance trends across periods.
+        \end{itemize}
+    \item Reduces reliance on strong assumptions about pre-existing trends.
+    \item Enhances robustness when pre-existing trends don’t align perfectly.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Assumptions in Synthetic Difference-in-Differences (SDID)}
+
+In both synthetic control and difference-in-differences, assumptions about pre-treatment trends are central. SDID combines these methods to leverage their strengths:
+
+\begin{itemize}
+    \item Uses pre-treatment trends to reweight treated and control groups.
+    \item Constructs a comparison group that mimics the treated group's trends.
+    \item Relies on four key assumptions for identification.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Assumption 1: Error Properties}
+
+\begin{itemize}
+    \item Errors are independent, identically distributed Gaussian vectors.
+    \item Covariance matrix has bounded eigenvalues.
+    \item Assumption is stricter than traditional DiD or synthetic control, which only assume error independence.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Assumption 2: Sample Sizes}
+
+\begin{itemize}
+    \item Large sample sizes are critical for SDID:
+    \begin{itemize}
+        \item Number of control units ($N_{co}$) and pre-treatment periods ($T_{pre}$) must be large.
+        \item Product of treated units ($N_{tr}$) and post-treatment periods ($T_{post}$) should also be large.
+    \end{itemize}
+    \item Balance between $T_{pre}$ and $N_{co}$ ensures effective reweighting.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Assumptions 3 and 4}
+
+\textbf{Assumption 3: Systematic Component Properties}
+\begin{itemize}
+    \item The systematic component ($L$) has a limited number of large singular values.
+    \item This low-rank structure captures broad patterns while reducing noise.
+    \item Goes beyond traditional DiD and synthetic control.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Assumption 4: Weighting Properties and $L$}
+\begin{itemize}
+    \item "Oracle" weights derived from $L$ reduce systematic bias.
+    \item Ensures parallel trends after reweighting without requiring perfect balance.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}
+\frametitle{Steps in SDID Estimation}
+
+\begin{itemize}
+    \item Identify unit weights for control units to match treated pre-treatment trends.
+    \item Select time weights to balance pre- and post-treatment trends.
+    \item Combine weights in regression to estimate the ATT.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{SDID Estimation Process}
+
+\begin{itemize}
+    \item Calculates unit and time weights to optimize comparison groups.
+    \item Uses regularization to prevent overfitting.
+        \begin{itemize}
+            \item Aligns with one-period outcome changes for untreated units.
+        \end{itemize}
+    \item Solves constrained least-squares for unit weights (\(\hat{w}\)).
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Estimation of SDiD}
+
+Synthetic DiD combines elements of DiD and synthetic control:
+\begin{itemize}
+    \item Compute the regularization parameter to align with typical one-period outcome changes:
+    \[
+    \Delta_{it} = Y_{i(t+1)} - Y_{it} \quad \text{(unexposed units)}.
+    \]
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+\begin{frame}
+\frametitle{Unit and Time Weights}
+
+\begin{itemize}
+    \item \textbf{Unit Weights (\(\hat{w}\)):}
+        \begin{itemize}
+            \item Match treated and control units pre-treatment.
+            \item Allows for a constant gap, relaxing traditional SC constraints.
+        \end{itemize}
+    \item \textbf{Time Weights (\(\hat{\lambda}\)):}
+        \begin{itemize}
+            \item Balance temporal dynamics.
+            \item Prioritize informative pre-treatment periods.
+        \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Estimating Weights}
+
+\begin{itemize}
+    \item Unit Weights:
+    \begin{itemize}
+        \item Estimated via constrained least squares on pre-treatment data.
+        \item Weights are non-negative, sum to one, and allow for a level shift with regularization.
+    \end{itemize}
+    \item Time Weights:
+    \begin{itemize}
+        \item Estimated via constrained least squares on control data.
+        \item Prioritizes periods just before treatment without spreading weights broadly.
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Estimation of SDiD: Unit Weights}
+
+\begin{itemize}
+    \item Estimate unit weights \(\widehat{w}\) to define a synthetic control unit.
+    \item Equation: 
+    \[
+    \widehat{w}_1 + \widehat{w}^T Y_{j,\text{pre}} \approx Y_{1,\text{pre}}
+    \]
+    \item Unlike traditional synthetic control, allows for an intercept term, relaxing perfect matching requirements.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Estimation of SDiD: Time Weights}
+
+\begin{itemize}
+    \item Estimate time weights \(\widehat{\lambda}\) to align synthetic pre-treatment periods:
+    \[
+    \widehat{\lambda}_1 + Y_{1,\text{pre}} \widehat{\lambda} \approx Y_{1,\text{post}}
+    \]
+    \item Focuses on identifying pre-treatment periods most informative for post-treatment behavior.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Combined Estimation}
+
+\begin{itemize}
+    \item SDID estimator combines unit and time weights.
+    \item Weighted regression minimizes residuals across units and time.
+    \item Ensures counterfactual outcomes align with treated outcomes pre-treatment.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Outcome Model in SDID}
+
+\begin{itemize}
+    \item Observed outcomes (\(Y\)) consist of:
+        \begin{itemize}
+            \item Systematic component (\(L\)).
+            \item Treatment effect (\(D \circ \delta\)).
+            \item Idiosyncratic error (\(E\)).
+        \end{itemize}
+    \item \(D \circ \delta\) isolates ATT by selecting treated units and periods.
+    \item \(L\) captures trends not explained by treatment or noise.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Oracle Weights}
+
+\begin{itemize}
+    \item Theoretical "ideal" weights for unit (\(\tilde{\omega}\)) and time (\(\tilde{\lambda}\)).
+    \item Minimize bias by balancing systematic component (\(L\)).
+    \item Data-driven weights (\(\hat{\omega}, \hat{\lambda}\)) approximate oracle weights.
+        \begin{itemize}
+            \item Ensure pre-treatment balance.
+            \item Converge to oracle weights as sample size increases.
+        \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Outcome Model}
+\begin{itemize}
+\item Outcome is a combination of systematic trends, treatment effects, and noise:
+\[
+Y = L + D \circ \delta + E
+\]
+\item Components:
+    \begin{itemize}
+    \item \(L\): systematic trends across units and time (\(L = \Gamma \Upsilon^\top\))
+    \item \(D \circ \delta\): treatment effects applied selectively
+    \item \(E\): idiosyncratic noise
+    \end{itemize}
+\item \(L\) represents shared patterns unaffected by treatment or randomness.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Role of Systematic Component \(L\)}
+\begin{itemize}
+\item Captures trends unrelated to treatment or random noise.
+\item Potential source of confounding if not properly controlled.
+\item Treated and control groups must balance \(L\) pre-treatment for valid comparison.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Oracle Weights}
+\begin{itemize}
+\item Theoretical weights (\(\tilde{\omega}, \tilde{\lambda}\)) minimize bias in estimating treatment effects.
+\item Balance systematic trends (\(L\)) across treated and control groups.
+\item Provide a benchmark for robust causal inference.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Data-Driven Weights}
+\begin{itemize}
+\item Empirical weights (\(\hat{\omega}, \hat{\lambda}\)) approximate oracle weights.
+\item Constructed to balance treated and control trends pre-treatment.
+\item Approximation improves with larger sample sizes.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Weighted Regression for SDiD}
+
+\begin{itemize}
+    \item Final estimation uses weighted DID regression:
+\end{itemize}
+
+\[
+\textrm{argmin}_{\tau, \mu, \alpha, \beta} \sum_{i=1}^N \sum_{t=1}^T \left( Y_{it} - \mu - \alpha_i - \beta_t - W_{it}\tau \right)^2 \widehat{w}_i^{\text{SDiD}} \widehat{\lambda_t}^{\text{SDiD}}
+\]
+
+\end{frame}
+
+
+
+
+\begin{frame}{Regression Comparison: SC, DiD, SDiD}
+
+\begin{itemize}
+    \item Synthetic Control (SC):
+    \[
+    \tau^{\text{SC}} = \textrm{argmin}_{\tau, \lambda} \sum_{i,t} (Y_{it} - \lambda_t - \tau D_{it})^2 w_i^{\text{SC}}
+    \]
+    \item Difference-in-Differences (DiD):
+    \[
+    \textrm{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2
+    \]
+    \item Synthetic Difference-in-Differences (SDiD):
+    \[
+    \textrm{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2 w_i \lambda_t
+    \]
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Key Features of SDiD}
+
+\begin{itemize}
+    \item Combines synthetic control's matching with DID's parallel trends adjustment.
+    \item Introduces unit and time weights for improved balance.
+    \item Does not require perfect pre-treatment matching or strictly parallel trends.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Decomposing the Bias of SDiD}
+\[
+\widehat{\tau}^{sdid} - \tau = \varepsilon(\widetilde{w}, \widetilde{\lambda}) + B(\widetilde{w}, \widetilde{\lambda}) + \widehat{\tau}(\widehat{w},\widehat{\lambda}) - \widehat{\tau}(\widetilde{w},\widetilde{\lambda})
+\]
+\begin{itemize}
+\item \textbf{Oracle noise}: Variance introduced by weights and sample limitations.
+\item \textbf{Oracle confounding bias}: Systematic differences not removed by weights.
+\item \textbf{Deviation from oracle}: Approximation errors in empirical weights.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Oracle Noise}
+\begin{itemize}
+\item Noise arises from random variation in data.
+\item Small when weights (\(\hat{w}, \hat{\lambda}\)) are small and sample sizes are sufficient.
+\item Ensures noise does not dominate the estimator.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Oracle Confounding Bias: Units and Time}
+\begin{itemize}
+\item \textbf{Units (Rows)}:
+    \[
+    \widetilde{w_1} + \widetilde{w_{j}}^TL_{j,pre} \approx \widetilde{w}_1^TL_{1,pre}
+    \]
+    \[
+    \widetilde{w_1} + \widetilde{w_{j}}^TL_{j,post} \approx \widetilde{w}_1^TL_{1,post}
+    \]
+    Ensures weights remove bias from systematic differences across units.
+\item \textbf{Time (Columns)}:
+    \[
+    \widetilde{\lambda_1} + \widetilde{\lambda_{j}}^TL_{j,pre} \approx \widetilde{\lambda}_1^TL_{1,pre}
+    \]
+    \[
+    \widetilde{\lambda_1} + \widetilde{\lambda_{j}}^TL_{j,post} \approx \widetilde{\lambda}_1^TL_{1,post}
+    \]
+    Captures temporal dynamics to align treated and control groups.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Doubly Robust Property}
+\begin{itemize}
+\item Sufficient for one set of weights (unit or time) to generalize well.
+\item Combination of oracle unit and time weights can compensate for failures in one dimension.
+\item Provides resilience against systematic confounding.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Deviation from Oracle}
+\begin{itemize}
+\item SDID approximates oracle weights when:
+    \begin{itemize}
+    \item Oracle weights generalize well on training sets.
+    \item Regularization is appropriately tuned.
+    \end{itemize}
+\item Ensures SDID estimator is close to theoretical benchmark.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Practical Implications}
+
+\begin{itemize}
+    \item Combines theoretical rigor with empirical flexibility.
+    \item Balances systematic trends in pre-treatment data.
+    \item Achieves robust causal inference for ATT estimation.
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Practical Considerations: Pre-treatment Trends}
+
+\begin{itemize}
+    \item Visually inspect pre-treatment trends to check for alignment between treated and control groups.
+    \item Use plots to ensure parallel trends are approximately valid before treatment.
+    \item Address any unusual patterns or discrepancies early.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Practical Considerations: Weights and Assumptions}
+
+\begin{itemize}
+    \item Balanced weights:
+    \begin{itemize}
+        \item Ensure $\hat{\omega}$ and $\hat{\lambda}$ are not overly concentrated.
+        \item Adjust regularization parameters if needed.
+    \end{itemize}
+    \item Assess parallel trends:
+    \begin{itemize}
+        \item Contextual knowledge remains crucial.
+        \item Account for potential confounders.
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Practical Considerations: SEs and Heterogeneous Effects}
+
+\begin{itemize}
+    \item Standard errors:
+    \begin{itemize}
+        \item Select bootstrap or other approaches suited to your data structure.
+        \item Be cautious with small treated samples.
+    \end{itemize}
+    \item Heterogeneous effects:
+    \begin{itemize}
+        \item Consider if ATT is the correct focus.
+        \item Explore alternative approaches for widely varying effects.
+    \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}{Key Takeaway}
+
+\begin{itemize}
+    \item Synthetic DiD offers a practical, flexible, and robust approach for causal inference in complex panel data.
+    \item Balances strengths of synthetic control and difference-in-differences while mitigating their weaknesses.
+    \item Poised to become a valuable tool in causal panel analysis.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Concluding Remarks: Synthesis of Methods}
+
+\begin{itemize}
+    \item Combines synthetic control (matching precision) with difference-in-differences (parallel trends).
+    \item Addresses challenges in synthetic control’s convex hull constraint.
+    \item Regularization allows for approximate matches with intercept terms.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{Concluding Remarks: Robustness and Applications}
+
+\begin{itemize}
+    \item Doubly robust:
+    \begin{itemize}
+        \item Performs well as long as unit or time weights succeed.
+    \end{itemize}
+    \item Adaptable to cases where:
+    \begin{itemize}
+        \item Diff-in-diff assumptions are weak.
+        \item Synthetic control fit is imperfect.
+    \end{itemize}
+    \item Links to augmented synthetic control for two-way bias reduction.
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}{Practical Problems}
+\begin{itemize}
+\item \textbf{Underfitting}: Cannot achieve parallel pre-treatment trends.
+    \begin{itemize}
+    \item Solution: Explore more or better controls or alternative methods.
+    \end{itemize}
+\item \textbf{Omitted Variable Bias}: External factors coincide with treatment, leading to identification failure.
+\item \textbf{Overfitting}: Synthetic control perfectly matches pre-treatment but fails post-treatment.
+    \begin{itemize}
+    \item Analogous to RDD functional form issues.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{How to Rule Out Overfitting: Oracle Weights}
+\begin{itemize}
+\item Estimator matches an "oracle" that avoids overfitting by design.
+\item Oracle weights minimize expected squared error, not just in-sample error.
+\item Weights are robust to noise in the data.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Properties of SDID}
+\begin{itemize}
+\item Approximately unbiased and normally distributed under large samples.
+\item Optimal variance, estimable via clustered bootstrap.
+\item Robust to noise and systematic confounding.
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}{R code: synthdid}
+
+Let's look at the code together
+
+\bigskip
+
+Code: \url{https://github.com/synth-inference/synthdid} 
+
+\bigskip
+
+Vignettes: \url{https://synth-inference.github.io/synthdid/articles/more-plotting.html}
+
+\end{frame}
+
+
+
+\begin{frame}{Application: Melo, Neilson and Kemboi 2023}
+
+
+``Indoor Vaccine Mandates in US Cities, Vaccination Behavior and COVID-19 Outcomes'' by Vitor Melo, Elijah Neilson and Dorothy Kemboi, 2023 working paper
+
+\bigskip
+
+Study investigates the effect of city-level vaccine mandates (implemented in US cities) on COVID-19 cases, deaths or vaccine uptake in the cities
+
+\bigskip
+
+Authors use Arkhangelsky, et al. (2021) ``synthetic difference-in-differences'', as well as conventional synthetic control and difference-in-differences and finds no effect of either the announcement or implementation of the mandate had any significant effect on the outcomes
+
+\end{frame}
+
+\begin{frame}{Motivation}
+
+\begin{itemize}
+\item Many policies and strategies were taken to incentivize citizens to get vaccinated and reduce COVID-19 spread
+\item Indoor vaccine mandates, one of the more restrictive, prevented people from entering public places (e.g., theaters, restaurants) without proof of vaccination
+\item Many large cities (NYC, San Francisco, LA, Seattle, Boston, Philadelphia) implemented with the stated goal to raise vaccination rates and slow spread and mortality from COVID-19
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Motivation}
+
+\begin{itemize}
+\item Vaccine viewed as crucial step toward controlling the virus and return life to normal
+\item Substantial number of Americans were unwilling to be immunized
+\item February 2021, 30\% of adults say they would probably or definite not be vaccinated
+\item Low vaccination rates led to measures to increase uptake like mandated vaccination and weekly testing, lotteries, etc.
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Mandates}
+
+\begin{itemize}
+\item August 3, 2021, due to the Delta variant, NYC passed mandate requiring proof of vaccination to enter restaurants, concerts, stadiums and gyms
+\item Similar policies were adopted by other major cities soon after (see next table)
+\item I'll skip the prior literature for now
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Timing}
+
+
+\begin{table}[ht]
+\centering
+\caption{Timing of Indoor Vaccine Mandates}
+\begin{tabular}{lccc}
+\toprule\toprule
+City          &  Announced &  Implemented &  Repealed \\ \midrule
+NYC           & 8/3/21     & 8/16/21       & 3/7/22    \\
+San Francisco & 8/12/21     & 8/20/21       & 3/11/22    \\
+New Orleans   & 8/12/21     & 8/16/21       & 3/21/22    \\
+Seattle       & 9/6/21     & 10/25/21       & 3/1/22    \\
+Los Angeles   & 11/8/21     & 11/29/21       & 3/30/22    \\
+Philadelphia  & 12/13/21     & 1/3/22       & 2/16/22    \\
+Boston        & 12/20/21     & 1/15/22       & 2/18/22    \\
+Chicago       & 12/21/21     & 1/3/22       & 2/28/22    \\
+DC            & 12/22/21     & 1/15/22       & 2/15/22    \\ \bottomrule\bottomrule
+\end{tabular}
+\end{table}
+
+
+\end{frame}
+
+\begin{frame}{Research question}
+
+\begin{itemize}
+\item Estimate an ATT for these cities' mandates on vaccination, cases and deaths
+\item Data will come from daily county level COVID-19 vaccinations, cases and deaths from the CDC aggregated to MSA by week scaled by US population estimates
+\item Main outcomes: Weekly measures of administered first doses of COVID-19 vaccines, cases, and deaths per 100,000 residents
+\item Weekly panel from December 21, 2020 to April 18, 2022 for 821 MSAs (they note various issues with data quality required dropping just under 100 MSAs) with 57,470 observations
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[shrink=20]{Descriptive Statistics}
+
+\begin{table}[ht]
+\centering \tiny
+\caption{Descriptive Statistics}
+\begin{tabular}{lccccccccc}
+\toprule\toprule
+ & \multicolumn{3}{c}{All MSAs} & \multicolumn{3}{c}{Treated MSAs} & \multicolumn{3}{c}{Untreated MSAs} \\ \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+Variable              & Mean & SD & Median & Mean & SD & Median & Mean & SD & Median \\ \midrule
+First Doses per 100,000  & 817.47 & 1,344.30 & 458.98 & 1,253.50 & 1,237.18 & 827.71 & 812.66 & 1,344.65 & 455.01 \\
+Cases per 100,000        & 273.75 & 373.61 & 147.73 & 247.47 & 394.75 & 121.95 & 274.04 & 373.37 & 148.16 \\
+Deaths per 100,000       & 3.56 & 5.87 & 1.90 & 2.03 & 2.31 & 1.17 & 3.58 & 5.90 & 1.91 \\
+Number of observations  & & 57,470 & & & 630 & & & 56,840 & \\ \bottomrule\bottomrule
+\end{tabular}
+\tiny \newline Notes: The unit of observation is MSA week. Our sample consists of 821 MSAs, 9 of which are treated, and the period spans 70 weeks from December 21, 2020, to April 18, 2022.
+\end{table}
+
+\end{frame}
+
+
+\begin{frame}{Great discussion of synth DiD}
+
+
+\begin{quote}
+``The basic idea is that the unit weights are chosen to find a convex combination of potential control states whose treatment trend in the outcome variable of interest is most parallel to that of the treated state.  The inclusion of the intercept term $\omega_0$ (made possible because of the inclusion of the unit fixed effects) is one way in which the SDID unit weights differ from those of the synthetic control weights.  Instead of the weights needing to make the pre-trend control unit perfectly match that of the treated unit, as is the case with the synthetic control estimator, allowing for this intercept makes it sufficient for the weights to just make the trends parallel.''
+\end{quote}
+
+\end{frame}
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/vitor_table3}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/vitor_table4}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/vitor_table5}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/vitor_figure1}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/vitor_figure2}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.3]{./lecture_includes/vitor_figure3}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Conclusion}
+
+\begin{itemize}
+
+\item They also report synth and DiD analysis as robustness -- something to keep in mind is the presentation of results are subjective
+\item Rather than showing regression results with more controls, we tend to now see different DiD and synth estimators as the robustness
+\item Authors fail to find strong evidence the vaccine mandates slowed COVID-19
+
+\end{itemize}
+
+\end{frame}
+
+
+\subsection{Synthetic Control with Staggered Adoption}
+
+
+
+\begin{frame}{Synthetic Control with Staggered Adoption}
+
+\begin{itemize}
+\item Synth was originally designed for a single treated unit, no extrapolation, non-negative weights summed to one
+\item Previous Ben-Michael, Feller and Rothstein (2021a) paper addressed imperfect fit in the pre-trends using bias correction and slightly negative weighting
+\item This new paper (Ben-Michael, Feller and Rothstein 2021b) focuses on multiple units by allowing differential timing
+\item This and matrix completion with nuclear norm regularization seem to be relevant for the new differential timing papers in diff-in-diff
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Synthetic Control with Staggered Adoption}
+
+\begin{itemize}
+\item Groups of units are treated, but they are treated at different time periods
+\item Standard approach is DiD and event studies
+	\begin{itemize}
+	\item Tons of papers recently (e.g., Callaway and Sant'Anna 2021; Sun and Abraham 2021; de Chaisemartin D'Haultfouielle 2020; Borusyak, et al. 2023)
+	\item Identifying assumption in all DiD papers is \emph{parallel trends}
+	\end{itemize}
+\item When parallel trends is not viable, then ATT estimate is biased by a non-parallel trends bias term
+\item Synthetic control methods were updated to accommodated multiple treated groups
+
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Synthetic Control with Staggered Adoption}
+
+\begin{itemize}
+\item Core idea of the paper:  find a coherent way to manage multiple synthetic controls and aggregating them into a single parameter estimate
+\item Goal is to balance the imperfect biases in the pooled and the separate unit-level estimates
+\item Their working example will be a teacher union collective bargaining law and teacher salary study
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Estimating effects under staggered adoption}
+
+\begin{itemize}
+\item \textbf{Staggered adoption}: Multiple units adopt treatment over time
+\item \textbf{Common approaches can fail}: Little guidance when this happens
+	\begin{itemize}
+	\item Diff-in-diff requires parallel trends assumption
+	\item Synth designed for single treated units, poor fit on average
+	\end{itemize}
+\item \textcolor{red}{Partially pooled synthetic control}
+	\begin{itemize}
+	\item Modify the optimization problem to target overall and state-specific fit
+	\item Account for the level differences with an intercept shift
+	\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\imageframe{./lecture_includes/augsynth_7.png}
+
+
+
+\begin{frame}{Teacher unions and teacher salaries/spending}
+
+Their application is about teacher unions
+\begin{itemize}
+\item 1964-1987: 33 states grant collective bargaining rights to teachers
+\item Long literature exploited the timing (Hoxby 1996; Lovenheim 2009)
+\item Impact on student spending, teacher salaries
+	\begin{itemize}
+	\item Hoxby (1996) finds increased spending by 12\%
+	\item Paglayan (2019) estimates precise zero in an event study model using ever-treated states
+	\end{itemize}
+\item Traditionally this was done using twoway fixed effects and event studies but these are known to have bias with heterogenous treatment effects (Goodman-Bacon 2021)
+\item They're going to re-analyze using all states and synth models and we can review it too using their code
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+
+\imageframe{./lecture_includes/augsynth_8.png}
+
+\begin{frame}{Two approaches before now vs theirs}
+
+\begin{enumerate}
+
+\item Separate Synthetic Control -- Donohue, et al. 2019 estimates separate synth model for each state that passed concealed carry laws then averaged the estimates;
+	\begin{itemize}
+	\item  only works if you can find good for each one obviously
+	\item Can lead to poor fit for the average leading to bias when the average treatment effect is the target parameter
+	\end{itemize}
+\item Pooled Synthetic Control -- Minimizes the average pre-treatment imbalance across all treated units
+	\begin{itemize}
+	\item Can achieve nearly perfect fit for the average treated unit
+	\item Can yield substantially worse unit-specific fits
+	\end{itemize}
+\item Partially pooled (their proposal) -- minimizes a weighted average of the two imbalances
+
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Intuition of the Partially Pooled Approach}
+
+We want to balance the average of the underlying factor loadings
+
+\begin{itemize}
+\item Balancing individual units may cause large imbalance in the average if errors all go in the same direction
+\item Balancing the average outcome may not balance factor loadings if imbalance for different treated units offset each other
+\item Trade these off one another
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Average separate synths (separate SCM)}
+
+\begin{itemize}
+\item Suppose the first $J$ units are treated at times $T_1, \dots, T_J$
+\item Suppose we find a synthetic control for each, with $w_{ij}$ the weight on donor unit $i$ for treated unit $j$
+\item Our estimate of the ATT at event time $k$ will then be
+\end{itemize}
+
+\begin{eqnarray*}
+\widehat{\delta} = \frac{1}{J} \sum_{j=1}^{J+1} \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\end{eqnarray*}Average of $J$ separate synth estimates
+
+\end{frame}
+
+
+\begin{frame}{Average treated unit (pooled SCM)}
+
+Alternatively, we can think of it as Synth estimate for average treated unit which they call the pooled SCM
+
+\begin{eqnarray*}
+\widehat{\delta} = \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\end{eqnarray*}
+
+\end{frame}
+
+
+\begin{frame}{Two definitions of ATT}
+
+
+\begin{eqnarray*}
+\widehat{\delta}_{Separate\ SCM} &=& \frac{1}{J} \sum_{j=1}^J \bigg ( Y_{j,T_j+k} - \sum_i w_{ij} Y_{i,T_j+k} \bigg ) \\
+\widehat{\delta}_{Pooled\ SCM}&=& \frac{1}{J} \sum_{j=2}^{J+1} Y_{j,T_j+k} - \frac{1}{J} \bigg ( \sum_{j=2}^{J+1} \sum_i w_{ij} Y_{i,T_j+k} \bigg )
+\end{eqnarray*}
+
+\end{frame}
+
+\begin{frame}{Returning to that optimization problem}
+
+So they ask: do we want to optimize the sum of the separate imbalances from the separate SCM or the imbalance of the sum (the pooled imbalance) from the pooled SCM?
+
+\begin{eqnarray*}
+\sum_{j=2}^{J+1} || X_j - \sum_i w_{ij}X_i ||^2\textrm{   or  } ||\sum_{j=2}^{J+1} X_j - \sum_i w_{ij} X_i ||^2
+\end{eqnarray*}where $j$ is treatment group and $i$ is donor pool units. Notice summations are inside or outside the norm. You will get different solutions obviously.
+\end{frame}
+
+\imageframe{./lecture_includes/augsynth_9.png}
+
+\imageframe{./lecture_includes/augsynth_10.png}
+
+\imageframe{./lecture_includes/augsynth_11.png}
+
+\imageframe{./lecture_includes/augsynth_12.png}
+
+\imageframe{./lecture_includes/augsynth_13.png}
+
+\imageframe{./lecture_includes/augsynth_14.png}
+
+\imageframe{./lecture_includes/augsynth_15.png}
+
+\imageframe{./lecture_includes/augsynth_16.png}
+
+\imageframe{./lecture_includes/augsynth_17.png}
+
+\imageframe{./lecture_includes/augsynth_18.png}
+
+
+
+\begin{frame}{Proposal: Partially pool synth}
+
+Instead of minimizing pooled imbalance or average state imbalance, minimize a \emph{weighted average}:
+
+\begin{eqnarray*}
+\textrm{min  }_{\Gamma \in \Delta^{synth}}  &&v|| \textrm{Pooled balance} ||^2_2 \\
+&&+ (1-v) \frac{1}{J} \sum_{j=2}^{J+1} ||\textrm{ State balance } ||^2_2 \\
+&&+ \textrm{ penalty }
+\end{eqnarray*}``Returns'' to this are highly convex: setting $v$ just a little below 1 yields a big improvement in state-level imbalance with very little cost in pooled imbalance
+
+\end{frame}
+
+\begin{frame}{$v$ hyperparameter}
+
+\begin{itemize}
+
+\item $v$ is the hyperparameter $v \in [0,1]$
+\item It governs the relative importance of the two objectives; 
+\item higher values of $v$ correspond to more weight on the pooled fit relative to the separate fit
+\item When $v=0$, it's the separate SCM and when it's $v=1$ it's the pooled SCM
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Intermediate choice of $v$}
+
+\begin{itemize}
+
+\item It is important to control both the pooled fit (for the ATT) and the unit-level fits (for both the ATT and the unit-level estimates)
+\item The hyper-parameter $v$ controls the relative weight of these in the objective
+\item In general, we want to find good estimates of both the overall ATT and the unit-level effects
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Intermediate choice of $v$}
+
+\begin{itemize}
+
+\item Following figures is the balance possibility frontier: the y-axis shows the pooled imbalance and the x-axis shows the unit-level imbalance
+\item The curve traces how these change as we vary $v$ from the SCM solution upper left to the pool lower right
+\item Strongly convex relationship which means we can accept a very small increase in pooled imbalance from the pooled solution and get large reductions in unit-level imbalance and vice versa
+
+\end{itemize}
+
+\end{frame}
+
+\imageframe{./lecture_includes/augsynth_19.png}
+
+\imageframe{./lecture_includes/augsynth_20.png}
+
+\imageframe{./lecture_includes/augsynth_21.png}
+
+\imageframe{./lecture_includes/augsynth_22.png}
+
+\imageframe{./lecture_includes/augsynth_23.png}
+
+
+
+\begin{frame}{Interpreting}
+
+\begin{itemize}
+
+\item So even going from $v=1$ to $v=0.99$ cuts the unit-level imbalance by 30 percent with almost no change in the pooled fit
+\item In many cases, it will be possible to trade off a small increase in pooled imbalance for a large decrease in unit-level imbalance
+\item This would yield a better estimator of the overall ATT and the unit-level estimates at little cost
+\item The balance possibility frontier is a tool you use to try and trace out the trade-offs between the pooled and unit-level fit and choose which ever $v$ they want
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Heuristic for $v$}
+
+\begin{itemize}
+
+\item They use a simple heuristic for choosing $v$
+\item The ratio of the pooled fir to the average unit-level fit
+\item The key idea is that if the separate problem with $v=0$ achieved good pooled fit on its own, then you want a small $v$ which ensures good unit and pooled fit
+\item If the pooled fit of separate is poor, then there can be substantial gains to giving the pooled higher priority and setting $v$ large
+
+\end{itemize}
+
+\end{frame}
+
+%\imageframe{./lecture_includes/augsynth_24.png}
+
+\imageframe{./lecture_includes/augsynth_25.png}
+
+
+\begin{frame}{Augment staggered adoption}
+
+\begin{enumerate}
+\item Estimate an outcome model
+\item Estimate the partially pooled synth model
+\item Use the outcome model to adjust synth for imbalance (bias correction) or alternatively just use synth on the residuals from the outcome model (double robust)
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Special case: weighted event study}
+
+\begin{itemize}
+\item Estimate unit fixed effects via pre-treatment average: $\overline{Y}_{i,T_j}^{pre}$
+\item Estimate synth using residuals (Doudchenko and Imbens 2017; Ferman and Pinto 2018)
+\end{itemize}
+
+
+\begin{eqnarray*}
+\widehat{Y}^{aug}_{j,T_j+k}(0) = \overline{Y}_{j,T_j}^{pre} + \sum_{i=1}^N \widehat{w}_{ij} \bigg ( Y_{i,T_j+k} - \overline{Y}_{i,T_j}^{pre} \bigg )
+\end{eqnarray*}where $Y(0)=Y^0$
+
+\end{frame}
+
+\begin{frame}{Special case: weighted event study}
+
+Treatment effect estimate is \textbf{weighted diff-in-diff}:
+
+\begin{eqnarray*}
+\widehat{\delta}_{jk}^{aug} = \bigg ( Y_{j,T_j+k} - \overline{Y}_{j,T_j}^{pre} \bigg ) - \sum_{i=1}^N \widehat{w}_{ij} \bigg (Y_{i,T_j+k} - \overline{Y}_{i,T_j}^{pre} \bigg )
+\end{eqnarray*}Uniform weights correspond to ``standard DiD''
+
+\end{frame}
+
+
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_26.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_27.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_28.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_29.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_30.png}
+	\end{figure}
+
+\end{frame}
+\begin{frame}[plain]
+
+	\begin{figure}
+	\includegraphics[scale=0.4]{./lecture_includes/augsynth_31.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}{Conclusions}
+
+\begin{itemize}
+\item Synth is useful for very difficult problems in which parallel trends is implausible
+\item With large $T$ and perfect balance, you can use synth to get approximately unbiased treatment effect estimates under reasonable DGPs (we saw in the original ADH)
+\item But perfect balance is a unicorn and doesn't happen in most settings
+\item What do we do when it doesn't?  Give up?  Salvage the estimates somehow? How?
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Conclusions}
+
+\begin{itemize}
+\item Augmented synth allows us to salvage the method, using an outcome model to remove bias from imperfect balance
+\item Partially pooled synth allows extension to the staggered adoption setting
+\item Combining the two methods gives us the best hope 
+	\begin{itemize}
+	\item A simple fixed effect outcome model leads to a weighted event study
+	\item This generalizes recent recommendations for two-way fixed effects
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+
+
+
+
+
+\section{Bonus: Event studies in finance}
+
+\begin{frame}{Possibilities for detecting corruption}
+
+\begin{itemize}
+
+\item Event studies in finance have been used to detect abnormal patterns around ``events'' involving single firms
+\item Baker and Gelbach (2020) proposes a type of synthetic control estimator that uses machine learning to estimate a counterfactual, as opposed to imposing strong parametric assumptions
+\item Examples of its use have been applied to disruptions with the Elon Musk Twitter deal which while not corruption does involve estimating potential damages from stock price movements
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Largest Securities Class Action Settlements}
+
+\begin{enumerate}
+
+\item Enron: \$7.2b
+\item WorldCom Inc: \$6.1b
+\item Tyco International Ltd.: \$3.2b
+\item Cendant Corporation: \$3.2b
+
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Over time}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_1}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Event studies and securities litigation}
+
+\begin{itemize}
+
+\item Historically, the ``event study'' estimated ``abnormal'' returns under strong parametric assumptions (e.g., normality), but non-normal returns are normal
+
+\begin{quote}
+``The abnormal returns are the parameters that determine the damage estimates in securities suits, it is worthwhile to explore whether methods exist that can provide more accurate estimates of the abnormal return itself.''
+\end{quote}
+
+\item They argue that the event study is an out-of-sample prediction problem, which ML is used for, but it is also an extension of the synth modeling framework
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Basic idea}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_2}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Event studies as a prediction problem}
+
+\begin{itemize}
+\item Let the daily return for firm $i$ on date $t$ be $r_{i,t}$ and variables used for prediction is $X_{i,t}$ (e.g., market return, Fama-French and Carhart factors, a 1 for intercept, etc.)
+\item Suppose an event reveals fraud.  It's effect on daily return is $r^1_{i,t} - r^0_{i,t}$ and we want to estimate $r^0_{i,t}$ with $\widehat{r}^0_{i,t}$
+\item Construct a predicted residual as $\widehat{\varepsilon}_{i,t} = r_{i,t} - \widehat{r}^0_{i,t}$
+\item Typically people would estimate this with OLS $$r_{i,t} = \alpha + \beta_1 X_{i,t} + \varepsilon_{i,t}$$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{OLS, ML, MSE, Bias, Variance}
+
+\begin{itemize}
+\item MSE of predicted abnormal return for $\widehat{\varepsilon}_{i,t} = r_{i,t} - \widehat{\beta}X_{i,t}$ is the sum of a squared bias term and a variance term
+\item It's possible that the variance of one specification is lower enough than another to make up for a difference in bias
+\item OLS also suffers because it overfits data when used for prediction -- it is best unbiased linear predictor but at the price of greater out-of-sample variance linear prediction
+\item Since MSE is the basis for measuring prediction accuracy, ML estimators may outperform conventional OLS as we can explore increasing bias and reducing variance
+\item ML methods accept bias in exchange for reduced variance out-of-sample accomplished through ``training''
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Paper's punchline}
+
+\begin{quote}
+``Using real stock return data, we demonstrate that a number of out-of-the-box statistical approaches that are relatively easy to interpret perform better than the standard, OLS-based event study specifications used in court proceedings.
+
+\bigskip
+
+We find that specifications using penalized regression generally perform well.  Specifications that adjust for daily market performance using data-driven peer indexes also generally perform well.
+
+\bigskip
+
+Finally, we obtain generally good performance from specifications that use a cross-validation technique that is robust to otherwise unmodeled time-series properties of the DGP. The best specifications provide noticeable improvements over event study approaches conventionally used in securities litigation. 
+
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{Peer index}
+
+\begin{itemize}
+\item They note that the best-performing specification makes use of both penalized regression and data-driven peer firm choice.
+\item They call this the ``reasonable peer index'', and they show that ML methods can usefully serve as a basis for choosing \emph{which} peer firms to include in an event study (again, making this a synth-like method) which can mitigate the subjective researcher bias that synth is meant to overcome
+\item Rather than subjectively picking which firms represent the counterfactual (over which there can be debate clearly, some disingenuous given the amount of money at stake), they propose letting the data say who the best peer is
+\item But using \emph{any} peer index appears to mitigate this too
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Ranking all the ML methods}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_5}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Elon Musk example}
+
+\begin{itemize}
+\item In an unpublished analysis, Baker examined Elon Musk's attempt to buy Twitter on Twitter's stock price
+\item Unlike his published paper, he's only going to use one form of ``penalized'' machine learning called ridge regression (which constrains what the coefficients can be in his model)
+\item He will use peer index and the S\&P500 for prediction purposes
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Purpose of the exercise}
+
+\begin{quote}
+``The goal here is to get a rough estimate of what TWTR would be trading at had Elon never put the stock in play. Note, this does not mean that the prediction is equivalent to what TWTR would trade at were the deal to not go through (without any damage payments), as Elon has likely destroyed value in the process. This prediction could in fact be used as a baseline price in any tort-type damages claim that the company would want to bring against Elon after the process is over.''
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{Basic idea}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_3}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Basic idea}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_4}
+\end{figure}
+\end{frame}
+
+\section{Concluding remarks}
+
+
+\begin{frame}{Abadie on the value and use of synthetic control}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/abadie_quote.png}
+	\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{Summarizing}
+
+
+\begin{itemize}
+
+\item Synthetic control was developed for the comparative case study; it is a kind of matching estimator with an underlying factor model for its identification (not parallel trends)
+\item Advancements have been made along multiple dimensions -- bias adjustments, demeaning, as well as exploring more general structures than just factor models
+\item It is now a more robust, general causal panel method but the assumptions needed to justify it need "due diligence" 
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Closing remark}
+
+\begin{itemize}
+\item Focus on the treatment assignment mechanisms carefully to help understand how unobserved time varying confounders may be threatening your results, pay close attention to issues around observable matching bias, remember the importance of the "long panel"
+\item Extrapolation based on the negative weighting should be done with the idea of bias reduction (augmented ridge), not simply for the purpose of fitting
+\item Good luck!
+
+\end{itemize}
+
+\end{frame}
+
+
+
+
+\end{document}

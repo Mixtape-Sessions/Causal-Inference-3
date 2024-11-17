@@ -84,10 +84,10 @@ ggplot(plot_data, aes(x = Year)) +
   labs(
     title = "Estimated Effect of Prop 99 on Smoking",
     subtitle = "Augmented Synthetic Control",
-    y = "Black Male Inmates",
+    y = "Cigarette Packs Per Capita",
     color = "Group"
   ) +
-  geom_vline(xintercept = 1993, linetype = "dashed", color = "gray") +  # Add dashed vertical line
+  geom_vline(xintercept = 1988, linetype = "dashed", color = "gray") +  # Add dashed vertical line
   theme_minimal()
 
 
