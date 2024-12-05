@@ -19,3 +19,4 @@ sdid cigsale state year treated, vce(placebo) reps(100) seed(123)
            xtitle("") scheme(plotplainblind))
     graph_export(sdid_, .png);
 #delimit cr
+
