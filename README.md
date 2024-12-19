@@ -6,11 +6,11 @@ Synthetic control has been called the most important innovation in causal infere
 
 ### Slides
 
-The full slide set is contained [here](https://github.com/Mixtape-Sessions/Causal-Inference-3/blob/main/Slides/Synthetic-Control.pdf).
+The full slide set is contained [here](https://nbviewer.org/github/Mixtape-Sessions/Causal-Inference-3/blob/main/Slides/Synthetic-Control.pdf).
 
 ### Coding Labs
 
-The main coding lab reanalyzes data from a natural experiment in Texas where for three years – 1993, 1994, 1995 – operational capacity expanded 35% per year causing its overall operational capacity to approximately double in three years. We use the 1993-1995 expansion as a natural experiment to examine the effect of prison expansion on incarceration rates. As an extension, we also analyze this dataset using the new `R` package, `augsynth`.
+The main [coding lab](https://github.com/Mixtape-Sessions/Causal-Inference-3/tree/main/Labs/Texas) reanalyzes data from a natural experiment in Texas where for three years – 1993, 1994, 1995 – operational capacity expanded 35% per year causing its overall operational capacity to approximately double in three years. We use the 1993-1995 expansion as a natural experiment to examine the effect of prison expansion on incarceration rates. As an extension, we also analyze this dataset using the new `R` package, `augsynth`.
 
 
 
