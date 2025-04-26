@@ -47,7 +47,10 @@
   \begin{itemize}
 	\item I'm Scott Cunningham, professor of economics at Baylor University, author of \underline{Causal Inference: the Mixtape}
 	\item I teach and host workshops on causal inference all over the world because I believe many people do not have all the opportunities they want to have that they believe will help them be successful in their research and careers 
-	\item Workshops can be helpful ways to plug into one's methodological training, and online workshops are very helpful because of the recordings, the coding together, and bunch of bells and whistles (e.g., github repositories)
+	\item Workshops can be helpful ways to continue our education in methods that are otherwise inaccessible for whatever reason
+		\begin{itemize}
+	\item Previous speakers include Alberto Abadie (MIT), Peter Hull (Brown), Jon Roth (Brown), Rocio Titunik (Princeton), Brigham Frandsen (BYU), Brantly Callaway (UGA), Jeff Gortmaker and Ariel Pakes (Harvard)
+  \end{itemize}
   \end{itemize}
 
 \end{frame}
@@ -58,7 +61,6 @@
 
   \begin{itemize}
     \item Mixtape Sessions is my online platform started in November 2021 to ``democratize causal inference'' by helping connect people, from beginner to advanced, with material and teachers that for various reasons may not be accessible otherwise
-    \item I became obsessed with teaching and writing about causal inference because of a strong conviction that (a) it is important and (b) not everyone had the same chances to learn it
     \item I tend to emphasize intuition, mechanics, narrow calculations, meaning, assumptions, code including actually taking time to code, advocate for data visualization -- in other words the art and the science
     \item I decided to start teaching a workshop on synthetic control given it is considered one of the more important innovations in causal inference of the last twenty years (Athey and Imbens 2017)
   \end{itemize}
@@ -71,7 +73,6 @@
     \item We workshop together for 2-days, 9am to 5pm CST with 15 min breaks on the hour and a 1-hour lunch break at noon CST
     \item I mix exposition, discussion of papers, coding exercises and discussion as best as I can
     \item I see this workshop as attempting to explain the method, explain some papers, but mainly towards providing guidance on projects using synthetic control, not simply the abstractions of the method 
-    \item Music at intermissions fyi
   \end{itemize}
 
 \end{frame}
@@ -130,44 +131,14 @@
   \begin{enumerate}
     \item Synthetic control traditionally without extrapolation
     \item Synthetic control with extrapolation and bias adjustment
-    \item Multiple treated units, staggered adoption, and merging with diff-in-diff
-	\item Bonus: event studies!
+    \item Aggregating across outcomes and noisy time series
+    \item Revisiting the event study from finance
+    \item Multiple treated units, staggered adoption, and synthetic diff-in-diff
   \end{enumerate}
 
 \end{frame}
 
-\subsection{Warranted Beliefs and Causal Inference}
-
-\begin{frame}
-\frametitle{Warranted Belief and Causal Inference}
-\begin{itemize}
-  \item Warranted belief, a phrase from philosophy, is like a bridge connecting true belief to knowledge 
-  \item In causal inference, think of it as ``good reasons'' to believe in our estimations of causal effects.
-  \item But the potential outcomes framework highlights the epistemic challenge of this enterprise caused by unobserved ``counterfactuals''
-  \item Randomized Controlled Trials (RCTs) offer strong warrants by closely approximating counterfactual scenarios by minimizing confounders allowing us to one group for another.
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{RCTs, Warrants, and Epistemic Humility}
-\begin{itemize}
-  \item Our beliefs about causal effects are probabilistic, rooted in the integrity of our assumptions.
-  \item This approach reflects an epistemic humility, acknowledging our methods' limitations.
-  \item Continuous inquiry and evidence accumulation inch us closer to true knowledge.
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{The Epistemic Value of Quasi-Experimental Designs}
-\begin{itemize}
-  \item Not all quasi-experimental designs are equal in their epistemic contribution.
-  \item Well-executed propensity score studies may approach closer to knowledge than poorly designed RCTs.
-  \item Synthetic control methods offer a pathway to robust knowledge, with varying degrees of effectiveness.
-  \item This workshop aims to refine our use of synthetic control towards stronger warrants of knowledge.
-\end{itemize}
-\end{frame}
-
-
+\subsection{Potential outcomes review}
 
 \begin{frame}{Causal Inference vs Prediction}
   \centering
@@ -196,18 +167,87 @@
 \end{frame}
 
 
-\subsection{Potential outcomes review}
+
+
+
+\begin{frame}
+\frametitle{Warranted Belief and Causal Inference}
+\begin{itemize}
+  \item The goal in causal inference is  \emph{psychological}
+  \item When is a correlation \emph{credibly} a causal effect?
+  \item When is it a "warranted belief" to believe that one thing caused another when observed in quantitative data and analyzed with statistics?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{RCT as Thought Experiment}
+\begin{itemize}
+\item It's helpful to start every project using the randomized controlled trial (RCT) as a thought experiment
+	\begin{itemize}
+	\item Ask yourself if you had a million dollars and complete freedom, what \emph{randomized} experiment would you run?
+	\item It helps you separate out pure description and pure prediction from causal identification
+	\item If you cannot articulate the randomization of something to a group of people, pause and start over
+	\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Decomposition Formula}
+
+\begin{itemize}
+\item If we compare the average outcome measured for different two groups -- one treated, one not treated -- then that "simple difference in mean outcomes" (SDO) is \textbf{always equal to}:
+
+\begin{eqnarray*}
+SDO &=& \texttt{Average causal effect}  \\
+&&+ \texttt{Selection Bias} \\
+&&+ \texttt{Heterogenous Treatment Effect Bias}
+\end{eqnarray*}
+\item Selection bias means the two groups were always going to have different outcomes even if they hadn't been treated
+\item Heterogenous treatment effect bias means the two groups were also different with respect to their response to the treatment
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Decomposition Formula}
+
+\begin{itemize}
+\item The decomposition formula is an identity, not a theorem -- it is in other words \textbf{always true}
+\item One of the unique features of randomization is that since it is a data generating process independent of the features of the data, it makes the the treatment and control group equal in large samples on all things
+\item That is, equal \textbf{except for the fact} that one group was treated and one wasn't
+\item This "equivalence in expectation" deletes selection bias and heterogenous treatment effect bias leaving only the first term -- the average effect of the treatment
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{RCT Framing Synthetic Control}
+\begin{itemize}
+\item In many industry and policy applications, you simply cannot run the RCT you want
+	\begin{itemize}
+	\item Maybe Uber wants to know the effect of some new self-driving program, but doesn't want to randomize it
+	\item It decides to roll it out in Austin, Texas only
+	\item Who is the control group?  How will they be chosen?
+	\end{itemize}
+  \item Synthetic control methods are usually candidates for causal inference in these situations because they work well with quasi-experimental policies at aggregate levels
+  \item They also use data driven procedures to find optimal comparison groups
+\end{itemize}
+\end{frame}
+
+
+
+
 
 
 \begin{frame}{Potential outcomes history}
 
 \begin{itemize}
 
-\item Causal inference is a scientific field within and across all major scientific categories focused on the epistemological foundations for believing one thing causes another
-\item Core idea in causal inference is to distinguish between what is the true (``realized outcome'') versus what may have been possible had something been different (``counterfactual'')
-\item Many people lay ownership to the following notation but it's broadly thought the mathematical notation comes from Jerzy Neyman's 1923 masters thesis, but you can find the ideas before him (e.g., John Stuart Mill, Ronald Fisher)
-\item Most commonly associated today with Don Rubin, former chair of Harvard's stats department (now retired)
-
+\item Causality (metaphysics and philosophy) versus causal inference (epistemology and psychology)
+\item Should I believe that this one thing caused another thing -- it's about credibility, evidence and beliefs
+\item We'll introduce briefly the notation we use throughout called potential outcomes which is a language rooted in a 1923 thesis by Jerzy Neyman, philosophical positions by JS Mill in the 1800s, and modern research agenda by Don Rubin
+\item Throughout the workshop, we will be focused on \textbf{binary treatment variables} applied to large populations
 \end{itemize}
 
 \end{frame}
@@ -218,7 +258,7 @@
 \begin{frame}{Potential outcomes notation}
 	
 	\begin{itemize}
-	\item Let the treatment be a binary variable: $$D_{i,t} =\begin{cases} 1 \text{ if in job training program $t$} \\ 0 \text{ if not in job training program at time $t$} \end{cases}$$where $i$ indexes an individual observation, such as a person
+	\item Let the treatment be a binary variable: $$D_{i,t} =\begin{cases} 1 \text{ if exposed to autonomous vehicle fleet at time $t$} \\ 0 \text{ if not exposed to autonomous vehicle fleet at time $t$} \end{cases}$$where $i$ indexes an individual observation, such as a person, though for our workshop it'll be an aggregate region
 
 	\end{itemize}
 \end{frame}
@@ -227,7 +267,7 @@
 	
 	\begin{itemize}
 
-	\item Potential outcomes: $$Y_{i,t}^j =\begin{cases} 1 \text{: wages at time $t$ if trained} \\ 0 \text{: wages at time $t$ if not trained} \end{cases}$$where $j$ indexes a counterfactual state of the world
+	\item Potential outcomes: $$Y_{i,t}^j =\begin{cases} 1 \text{: accidents at time $t$ if trained} \\ 0 \text{: accidents at time $t$ if not trained} \end{cases}$$where $j$ indexes a hypothetical state of the world 
 
 	\end{itemize}
 \end{frame}
@@ -241,7 +281,7 @@
 	    The individual treatment effect,  $\delta_i$, equals $Y_i^1-Y_i^0$
 	\end{block}
 
-Missing data problem:  I don't know my own counterfactual
+Causal inference is a missing data problem in that no one knows the counterfactual because it is "missing" (though here it is more like "fictional" than missing).
 	
 \end{frame}
 
@@ -287,7 +327,32 @@ This is one of the most important policy parameters, if not the most important, 
 	\end{figure}
 \end{frame}
 
-\begin{frame}{History of synthetic control}
+\begin{frame}{Synthetic Control}
+	
+	\begin{itemize}
+	\item Synthetic control has been called the most important innovation in causal inference of the last two decades by Athey and Imbens (2017)
+	\item Originally designed for comparative case studies, but ongoing developments have extended it to multiple treated units, differential timing, bias adjustment and even modifications to difference-in-differences
+	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and modifications continue all the time
+	\item Many will move to synthetic control after throwing in the towel on Diff-in-Diff -- \emph{but why?}
+	\end{itemize}
+\end{frame}
+	
+\begin{frame}{What is a comparative case study?}
+
+\begin{itemize}
+\item Comparative case studies compare a single aggregate unit (like a country) to another unit (like another country) to make statements about causal effects from aggregate policies or events
+\item But the single treated unit can be any aggregate unit: a country, a state, school, firm, etc. 
+\item Social scientists traditionally approached comparative case studies in one of two ways:
+	\begin{enumerate}
+	\item \textcolor{blue}{Qualitatively} (political science)
+	\item \textcolor{red}{Quantitatively} (economics)
+	\end{enumerate}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{First synthetic control paper}
 
  
 ``The Economic Costs of Conflict: A Case Study of Basque Country'' (2003) by Alberto Abadie and Javier Gardeazabal, \emph{American Economic Review} (see /Readings at Github Repo)
@@ -317,29 +382,6 @@ Approximately 5 minutes
 
 \end{frame}
 
-\begin{frame}{So what is this thing called synthetic control}
-	
-	\begin{itemize}
-	\item Synthetic control has been called the most important innovation in causal inference of the last two decades by Athey and Imbens (2017)
-	\item Originally designed for comparative case studies, but ongoing developments have extended it to multiple treated units, differential timing, bias adjustment and even modifications to difference-in-differences
-	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and modifications continue all the time
-	\item Many will move to synthetic control after throwing in the towel on Diff-in-Diff -- \emph{but why?}
-	\end{itemize}
-\end{frame}
-	
-\begin{frame}{What is a comparative case study?}
-
-\begin{itemize}
-\item Comparative case studies compare a single aggregate unit (like a country) to another unit (like another country) to make statements about causal effects from aggregate policies or events
-\item But the single treated unit can be any aggregate unit: a country, a state, school, firm, etc. 
-\item Social scientists traditionally approached comparative case studies in one of two ways:
-	\begin{enumerate}
-	\item \textcolor{blue}{Qualitatively} (political science)
-	\item \textcolor{red}{Quantitatively} (economics)
-	\end{enumerate}
-\end{itemize}
-
-\end{frame}
 
 
 \begin{frame}{\textcolor{blue}{Qualitative} comparative case studies}
@@ -1714,6 +1756,483 @@ See Appendix A for more details
 	\end{itemize}
 \end{itemize}
 
+\end{frame}
+
+\subsection{Applying Machine Learning to Event studies from Finance}
+
+\begin{frame}{Possibilities for detecting corruption}
+
+\begin{itemize}
+
+\item Event studies in finance have been used to detect abnormal patterns around ``events'' involving single firms
+\item Baker and Gelbach (2020) proposes a type of synthetic control estimator that uses machine learning to estimate a counterfactual, as opposed to imposing strong parametric assumptions
+\item Examples of its use have been applied to disruptions with the Elon Musk Twitter deal which while not corruption does involve estimating potential damages from stock price movements
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Largest Securities Class Action Settlements}
+
+\begin{enumerate}
+
+\item Enron: \$7.2b
+\item WorldCom Inc: \$6.1b
+\item Tyco International Ltd.: \$3.2b
+\item Cendant Corporation: \$3.2b
+
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Over time}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_1}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Event studies and securities litigation}
+
+\begin{itemize}
+
+\item Historically, the ``event study'' estimated ``abnormal'' returns under strong parametric assumptions (e.g., normality), but non-normal returns are normal
+
+\begin{quote}
+``The abnormal returns are the parameters that determine the damage estimates in securities suits, it is worthwhile to explore whether methods exist that can provide more accurate estimates of the abnormal return itself.''
+\end{quote}
+
+\item They argue that the event study is an out-of-sample prediction problem, which ML is used for, but it is also an extension of the synth modeling framework
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Basic idea}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_2}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}{Event studies as a prediction problem}
+
+\begin{itemize}
+\item Let the daily return for firm $i$ on date $t$ be $r_{i,t}$ and variables used for prediction is $X_{i,t}$ (e.g., market return, Fama-French and Carhart factors, a 1 for intercept, etc.)
+\item Suppose an event reveals fraud.  It's effect on daily return is $r^1_{i,t} - r^0_{i,t}$ and we want to estimate $r^0_{i,t}$ with $\widehat{r}^0_{i,t}$
+\item Construct a predicted residual as $\widehat{\varepsilon}_{i,t} = r_{i,t} - \widehat{r}^0_{i,t}$
+\item Typically people would estimate this with OLS $$r_{i,t} = \alpha + \beta_1 X_{i,t} + \varepsilon_{i,t}$$
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{OLS, ML, MSE, Bias, Variance}
+
+\begin{itemize}
+\item MSE of predicted abnormal return for $\widehat{\varepsilon}_{i,t} = r_{i,t} - \widehat{\beta}X_{i,t}$ is the sum of a squared bias term and a variance term
+\item It's possible that the variance of one specification is lower enough than another to make up for a difference in bias
+\item OLS also suffers because it overfits data when used for prediction -- it is best unbiased linear predictor but at the price of greater out-of-sample variance linear prediction
+\item Since MSE is the basis for measuring prediction accuracy, ML estimators may outperform conventional OLS as we can explore increasing bias and reducing variance
+\item ML methods accept bias in exchange for reduced variance out-of-sample accomplished through ``training''
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Paper's punchline}
+
+\begin{quote}
+``Using real stock return data, we demonstrate that a number of out-of-the-box statistical approaches that are relatively easy to interpret perform better than the standard, OLS-based event study specifications used in court proceedings.
+
+\bigskip
+
+We find that specifications using penalized regression generally perform well.  Specifications that adjust for daily market performance using data-driven peer indexes also generally perform well.
+
+\bigskip
+
+Finally, we obtain generally good performance from specifications that use a cross-validation technique that is robust to otherwise unmodeled time-series properties of the DGP. The best specifications provide noticeable improvements over event study approaches conventionally used in securities litigation. 
+
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{Peer index}
+
+\begin{itemize}
+\item They note that the best-performing specification makes use of both penalized regression and data-driven peer firm choice.
+\item They call this the ``reasonable peer index'', and they show that ML methods can usefully serve as a basis for choosing \emph{which} peer firms to include in an event study (again, making this a synth-like method) which can mitigate the subjective researcher bias that synth is meant to overcome
+\item Rather than subjectively picking which firms represent the counterfactual (over which there can be debate clearly, some disingenuous given the amount of money at stake), they propose letting the data say who the best peer is
+\item But using \emph{any} peer index appears to mitigate this too
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Ranking all the ML methods}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_5}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Elon Musk example}
+
+\begin{itemize}
+\item In an unpublished analysis, Baker examined Elon Musk's attempt to buy Twitter on Twitter's stock price
+\item Unlike his published paper, he's only going to use one form of ``penalized'' machine learning called ridge regression (which constrains what the coefficients can be in his model)
+\item He will use peer index and the S\&P500 for prediction purposes
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Purpose of the exercise}
+
+\begin{quote}
+``The goal here is to get a rough estimate of what TWTR would be trading at had Elon never put the stock in play. Note, this does not mean that the prediction is equivalent to what TWTR would trade at were the deal to not go through (without any damage payments), as Elon has likely destroyed value in the process. This prediction could in fact be used as a baseline price in any tort-type damages claim that the company would want to bring against Elon after the process is over.''
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{Basic idea}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_3}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Basic idea}
+
+\begin{figure}
+\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_4}
+\end{figure}
+\end{frame}
+
+\subsection{Concluding remarks}
+
+
+\begin{frame}{Abadie on the value and use of synthetic control}
+
+	\begin{figure}
+	\includegraphics[scale=0.5]{./lecture_includes/abadie_quote.png}
+	\end{figure}
+
+\end{frame}
+
+
+
+\section{Multiple Outcomes}
+
+%--- Slide 1 ---
+\begin{frame}{Motivation: A Tale of Two Californias}
+  \begin{itemize}
+    \item Recall from earlier the example wherein California in 1988 implemented strong anti-smoking laws—taxes, advertising bans, public campaigns.
+    \item In Abadie et al. (2010), a "Synthetic California" was built to estimate the law's effect on smoking.
+    \item Suppose we then asked: What about alcohol consumption?
+    \begin{itemize}
+      \item We'd construct a new synthetic California matched on pre-treatment alcohol trends.
+      \item But we'd likely get different weights—different donor states.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%--- Slide 2 ---
+\begin{frame}{Interpretability Challenge}
+  \begin{itemize}
+    \item Now we have \textit{two} synthetic Californias:
+    \begin{itemize}
+      \item One built to predict smoking trends
+      \item Another to predict alcohol trends
+    \end{itemize}
+    \item This breaks the narrative: which one is "the" counterfactual California?
+    \item SCM aims to construct a unit-level counterfactual—not a new one for every outcome.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 3 ---
+\begin{frame}{Why This Problem Matters More in SCM}
+  \begin{itemize}
+    \item Matching on covariates (e.g., Abadie \& Imbens) allows unit-specific matches—it's fine if donor sets vary.
+    \item SCM differs: it promises to build one synthetic unit.
+     \item If outcomes are driven by the same unobserved factors, we gain both interpretability and statistical efficiency by using common weights.
+  \end{itemize}
+\end{frame}
+
+
+%--- Slide 1 ---
+\begin{frame}{Motivation: SCM with Multiple Outcomes}
+  \begin{itemize}
+    \item Many SCM applications involve multiple outcomes, like arrests, violence and STIs (Cunningham and Shah 2018), employment and wages (Jardim, et al. 2022), etc.
+    \item Standard practice is to estimate separate SCM weights for each outcome.
+    \item Problem is that separate weights can (will?) yield very different donor pools \& make interpretation difficult.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 2 ---
+\begin{frame}{Value-Add of This Paper}
+  \begin{itemize}
+    \item Sun, Ben-Michael, and Feller (2025) proposes methods to estimate a \textbf{common set of SCM weights} across outcomes.
+    \item They'll present two approaches:
+    \begin{itemize}
+      \item Concatenated outcomes
+      \item Averaged outcomes
+    \end{itemize}
+    \item Their goal is to lower bias \& get more interpretable synthetic units.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{A Tension: Fit vs. Interpretability}
+  \begin{block}{Audience Thought}
+    \centering
+    \large
+    "If I separately optimized each outcome, won't any common set of weights necessarily fit \textbf{worse}?"
+  \end{block}
+  \vspace{0.5cm}
+  \begin{itemize}
+    \item Forcing a common set of weights improves interpretability—but may worsen pre-treatment fit.
+    \item Separate SCM fits each outcome individually better—but sacrifices coherence.
+    \item The real challenge: can we pool structure \textit{without} making both sides worse?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Separate SCM: Optimal for Each Outcome Individually}
+  \begin{itemize}
+    \item In separate SCM for outcome $k$, we solve:
+    \[
+    \min_{\gamma} \sum_{t=1}^{T_0} \left( Y_{1tk} - \sum_{i=2}^N \gamma_i Y_{itk} \right)^2
+    \]
+    subject to:
+    \begin{itemize}
+      \item $\sum_{i=2}^N \gamma_i = 1$ (weights sum to one)
+      \item $\gamma_i \geq 0$ for all $i$ (non-negative weights)
+    \end{itemize}
+    \item Thus, the resulting weights are \textbf{optimal for outcome $k$} given these constraints.
+    \item Without the non-negativity constraint, weights might sometimes be negative (as in some extensions like augmented SCM).
+  \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}{Reminder: Pre-Treatment Fit}
+  \begin{itemize}
+    \item In SCM, even the best possible weights usually leave some \textbf{residual discrepancy}.
+    \item $q(\gamma)$ measures the pre-treatment gap between the treated unit and the synthetic control.
+    \item Smaller $q(\gamma)$ $\Rightarrow$ better fit, but perfect match is rare given real-world donor pools.
+  \end{itemize}
+  \vspace{0.5cm}
+  \begin{center}
+  \includegraphics[width=0.65\linewidth]{./lecture_includes/reminder_fit.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{A New Optimization Problem: Global Coherence}
+  \begin{itemize}
+    \item Sun, Ben-Michael, and Feller (2025) propose not just a new estimator, but a \textbf{new objective}.
+    \item Minimize pre-treatment discrepancy \textbf{across outcomes simultaneously} by optimizing a \textit{pooled} loss:
+  \end{itemize}
+  \[
+    \min_{\gamma} \left\{ \nu \cdot q_{\text{avg}}(\gamma) + (1 - \nu) \cdot q_{\text{cat}}(\gamma) \right\}
+  \]
+  \begin{itemize}
+    \item Where:
+    \begin{itemize}
+      \item $q_{\text{avg}}(\gamma)$ minimizes discrepancy for the average of outcomes.
+      \item $q_{\text{cat}}(\gamma)$ minimizes discrepancy across all outcomes stacked together.
+    \end{itemize}
+    \item The resulting common weights are \textbf{optimal for this new pooled objective}—not for any single outcome’s individual fit.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 3 ---
+\begin{frame}{Setup and Target Parameter}
+  \begin{itemize}
+  \item Recall that Abadie used $J$ for the number of donor units by here Sun, Ben-Michael, and Feller (2025) use $N$ for total units and $N_0$ for donor units.
+
+    \item One treated unit, $N-1$ control units, $K$ outcomes.
+    \item Interested in post-treatment effects $\tau_k = Y_{1T,k}(1) - Y_{1T,k}(0)$.
+    \item SCM estimates $Y_{1T,k}(0)$ using weighted average of donor pool units.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Demeaned estimator}
+
+\begin{quote}
+“We follow the potential outcomes framework … and throughout focus on de-meaned or intercept-shifted weighting estimators, which were introduced in the single outcome setting (Doudchenko and Imbens, 2017; Ferman and Pinto, 2021) and were adapted to multiple outcomes by Tian et al. (2023), who argue that outcome-specific demeaning is useful for comparing across outcomes.” -- Sun, Ben-Michael and Feller (2025)
+\end{quote}
+
+\end{frame}
+
+%--- Slide 4 ---
+\begin{frame}{Estimator Form}
+  \begin{itemize}
+    \item Demeaned estimator:
+    \[
+    \hat{Y}_{1T,k}(0) = \bar{Y}_{1\cdot k} + \sum_{i=2}^N \gamma_i (Y_{iT,k} - \bar{Y}_{i\cdot k})
+    \]
+    \item Where:
+    \begin{itemize}
+      \item $\bar{Y}_{1\cdot k}$ is the treated unit’s pre-treatment average for outcome $k$.
+      \item $\bar{Y}_{i\cdot k}$ is control unit $i$'s pre-treatment average for outcome $k$.
+      \item $(Y_{iT,k} - \bar{Y}_{i\cdot k})$ is the deviation of control unit $i$'s post-treatment outcome from its pre-treatment mean.
+      \item $\gamma_i$ are the donor pool weights chosen to best match pre-treatment trajectories.
+    \end{itemize}
+    \item We choose weights $\gamma$ to minimize pre-treatment imbalance.
+    \item \textbf{Key difference:} How we define imbalance when $K > 1$.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 5 ---
+\begin{frame}{Problems with Separate Weights}
+  \begin{itemize}
+    \item Each outcome gets its own set of SCM weights.
+    \item Can lead to overfitting, especially in short panels.
+    \item Different donors per outcome $\Rightarrow$ hard to interpret one synthetic unit.
+  \end{itemize}
+  \includegraphics[width=0.9\linewidth]{./lecture_includes/figure1_weights.png}
+\end{frame}
+
+%--- Slide 6 ---
+\begin{frame}{Proposed Solution: Shared Weights}
+  \begin{itemize}
+    \item Estimate a \textbf{common set of weights} across outcomes.
+    \item Two strategies:
+    \begin{itemize}
+      \item \textbf{Concatenated:} stack all outcome-time pairs.
+      \item \textbf{Averaged:} average outcomes before computing imbalance.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%--- Slide 7 ---
+\begin{frame}{Formalizing the Objective Functions}
+  \begin{itemize}
+    \item Concatenated weights minimize:
+    \[ q_{\text{cat}}(\gamma)^2 = \frac{1}{T_0 K} \sum_{k=1}^K \sum_{t=1}^{T_0} \left(Y_{1tk} - \sum_{i=2}^N \gamma_i Y_{itk} \right)^2 \]
+    \item Averaged weights minimize:
+    \[ q_{\text{avg}}(\gamma)^2 = \frac{1}{T_0} \sum_{t=1}^{T_0} \left( \frac{1}{K} \sum_{k=1}^K Y_{1tk} - \sum_{i=2}^N \gamma_i \frac{1}{K} \sum_{k=1}^K Y_{itk} \right)^2 \]
+  \end{itemize}
+\end{frame}
+
+%--- Slide 8 ---
+\begin{frame}{Why Averaging Helps}
+  \begin{itemize}
+    \item Averaging outcomes smooths out idiosyncratic noise.
+    \item Leads to tighter fit and lower bias bounds as $K$ grows.
+    \item Bias bound: $O(1/\sqrt{K})$ under low-rank factor model.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 9 ---
+\begin{frame}{Key Assumption: Low-Rank Structure}
+  \begin{itemize}
+    \item Outcomes are driven by common latent factors:
+    \[ L_{itk} = \phi_i^\top \mu_{tk} \]
+    \item Oracle weights exist iff the data matrix is low rank.
+    \item Factor model aligns donor units via shared structure.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 10 ---
+\begin{frame}{Bias Decomposition}
+  \begin{itemize}
+    \item Total estimation error = bias + noise
+    \item Bias: failure to balance latent structure
+    \item Noise: post-treatment idiosyncratic error
+  \end{itemize}
+\end{frame}
+
+%--- Slide 11 ---
+\begin{frame}{Theorem 1: Bias Bounds}
+  \begin{itemize}
+    \item Separate SCM: $O(1)$ bias
+    \item Concatenated SCM: $O(1)$, better overfitting control
+    \item Averaged SCM: $O(1/\sqrt{K})$ bias
+  \end{itemize}
+  \includegraphics[width=0.9\linewidth]{./lecture_includes/table1_bounds.png}
+\end{frame}
+
+%--- Slide 12 ---
+\begin{frame}{Practical Diagnostics}
+  \begin{itemize}
+    \item Singular value decomposition (SVD): do a few components explain most variation?
+    \item Hold-out fit: leave one outcome out and check fit.
+    \item Combine averaging and concatenation (weighted frontier).
+  \end{itemize}
+\end{frame}
+
+%--- Slide 13 ---
+\begin{frame}{Application: Flint Water Crisis}
+  \begin{itemize}
+    \item Flint is treated unit; 54 MI school districts as controls.
+    \item 4 outcomes: math, reading, attendance, special needs.
+    \item Estimate SCM using separate, cat., avg., and combined weights.
+  \end{itemize}
+  \includegraphics[width=0.9\linewidth]{./lecture_includes/figure2_gaps.png}
+\end{frame}
+
+%--- Slide 14 ---
+\begin{frame}{Flint Results: Interpretation}
+  \begin{itemize}
+    \item Separate weights fit very well pre-treatment but likely overfit.
+    \item Average and combined weights offer good fit with less overfitting.
+    \item Estimated impacts: decline in math scores, increase in special needs.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 15 ---
+\begin{frame}{Simulation: Clean vs. Noisy Outcomes}
+  \begin{itemize}
+    \item Vary strength of shared vs. idiosyncratic factors.
+    \item When outcomes share structure: avg. \& cat. reduce bias.
+    \item When outcomes diverge: separate may be safer.
+  \end{itemize}
+  \includegraphics[width=0.9\linewidth]{./lecture_includes/sim1_bias_boxplots.png}
+\end{frame}
+
+%--- Slide 16 ---
+\begin{frame}{Simulation: Failure Case}
+  \begin{itemize}
+    \item When $\rho = 0$, no shared structure $\Rightarrow$ avg. SCM fails.
+    \item Bias explodes as averaging collapses signal.
+    \item Use SVD or condition number to detect weak structure.
+  \end{itemize}
+  \includegraphics[width=0.9\linewidth]{./lecture_includes/sim2_failure_case.png}
+\end{frame}
+
+%--- Slide 17 ---
+\begin{frame}{Recommendations for Practice}
+  \begin{itemize}
+    \item Standardize outcomes.
+    \item Check SVD or hold-out diagnostics.
+    \item Use average or combined weights when K is large and shared structure is plausible.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 18 ---
+\begin{frame}{Combined Objective Frontier}
+  \begin{itemize}
+    \item Blend average and concatenated objectives.
+    \item Tune $\nu$ to balance fit and robustness.
+    \item Visual: \texttt{augsynth} package frontier plot
+  \end{itemize}
+  \includegraphics[width=0.85\linewidth]{./lecture_includes/frontier_plot.png}
+\end{frame}
+
+%--- Slide 19 ---
+\begin{frame}{Why This Paper Matters}
+  \begin{itemize}
+    \item Pushes SCM beyond single-outcome constraint.
+    \item Improves interpretability and bias control.
+    \item Leads naturally into matrix completion \& machine learning SCM.
+  \end{itemize}
+\end{frame}
+
+%--- Slide 20 ---
+\begin{frame}{Questions?}
+  \begin{itemize}
+    \item Let’s discuss diagnostics, estimation details, or extensions.
+    \item Also happy to talk about \texttt{augsynth} implementation.
+  \end{itemize}
 \end{frame}
 
 
@@ -3250,165 +3769,6 @@ Treatment effect estimate is \textbf{weighted diff-in-diff}:
 
 
 
-
-\section{Bonus: Event studies in finance}
-
-\begin{frame}{Possibilities for detecting corruption}
-
-\begin{itemize}
-
-\item Event studies in finance have been used to detect abnormal patterns around ``events'' involving single firms
-\item Baker and Gelbach (2020) proposes a type of synthetic control estimator that uses machine learning to estimate a counterfactual, as opposed to imposing strong parametric assumptions
-\item Examples of its use have been applied to disruptions with the Elon Musk Twitter deal which while not corruption does involve estimating potential damages from stock price movements
-
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Largest Securities Class Action Settlements}
-
-\begin{enumerate}
-
-\item Enron: \$7.2b
-\item WorldCom Inc: \$6.1b
-\item Tyco International Ltd.: \$3.2b
-\item Cendant Corporation: \$3.2b
-
-\end{enumerate}
-
-\end{frame}
-
-\begin{frame}{Over time}
-
-\begin{figure}
-\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_1}
-\end{figure}
-\end{frame}
-
-\begin{frame}{Event studies and securities litigation}
-
-\begin{itemize}
-
-\item Historically, the ``event study'' estimated ``abnormal'' returns under strong parametric assumptions (e.g., normality), but non-normal returns are normal
-
-\begin{quote}
-``The abnormal returns are the parameters that determine the damage estimates in securities suits, it is worthwhile to explore whether methods exist that can provide more accurate estimates of the abnormal return itself.''
-\end{quote}
-
-\item They argue that the event study is an out-of-sample prediction problem, which ML is used for, but it is also an extension of the synth modeling framework
-
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Basic idea}
-
-\begin{figure}
-\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_2}
-\end{figure}
-\end{frame}
-
-
-\begin{frame}{Event studies as a prediction problem}
-
-\begin{itemize}
-\item Let the daily return for firm $i$ on date $t$ be $r_{i,t}$ and variables used for prediction is $X_{i,t}$ (e.g., market return, Fama-French and Carhart factors, a 1 for intercept, etc.)
-\item Suppose an event reveals fraud.  It's effect on daily return is $r^1_{i,t} - r^0_{i,t}$ and we want to estimate $r^0_{i,t}$ with $\widehat{r}^0_{i,t}$
-\item Construct a predicted residual as $\widehat{\varepsilon}_{i,t} = r_{i,t} - \widehat{r}^0_{i,t}$
-\item Typically people would estimate this with OLS $$r_{i,t} = \alpha + \beta_1 X_{i,t} + \varepsilon_{i,t}$$
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{OLS, ML, MSE, Bias, Variance}
-
-\begin{itemize}
-\item MSE of predicted abnormal return for $\widehat{\varepsilon}_{i,t} = r_{i,t} - \widehat{\beta}X_{i,t}$ is the sum of a squared bias term and a variance term
-\item It's possible that the variance of one specification is lower enough than another to make up for a difference in bias
-\item OLS also suffers because it overfits data when used for prediction -- it is best unbiased linear predictor but at the price of greater out-of-sample variance linear prediction
-\item Since MSE is the basis for measuring prediction accuracy, ML estimators may outperform conventional OLS as we can explore increasing bias and reducing variance
-\item ML methods accept bias in exchange for reduced variance out-of-sample accomplished through ``training''
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Paper's punchline}
-
-\begin{quote}
-``Using real stock return data, we demonstrate that a number of out-of-the-box statistical approaches that are relatively easy to interpret perform better than the standard, OLS-based event study specifications used in court proceedings.
-
-\bigskip
-
-We find that specifications using penalized regression generally perform well.  Specifications that adjust for daily market performance using data-driven peer indexes also generally perform well.
-
-\bigskip
-
-Finally, we obtain generally good performance from specifications that use a cross-validation technique that is robust to otherwise unmodeled time-series properties of the DGP. The best specifications provide noticeable improvements over event study approaches conventionally used in securities litigation. 
-
-\end{quote}
-
-\end{frame}
-
-\begin{frame}{Peer index}
-
-\begin{itemize}
-\item They note that the best-performing specification makes use of both penalized regression and data-driven peer firm choice.
-\item They call this the ``reasonable peer index'', and they show that ML methods can usefully serve as a basis for choosing \emph{which} peer firms to include in an event study (again, making this a synth-like method) which can mitigate the subjective researcher bias that synth is meant to overcome
-\item Rather than subjectively picking which firms represent the counterfactual (over which there can be debate clearly, some disingenuous given the amount of money at stake), they propose letting the data say who the best peer is
-\item But using \emph{any} peer index appears to mitigate this too
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Ranking all the ML methods}
-
-\begin{figure}
-\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_5}
-\end{figure}
-\end{frame}
-
-\begin{frame}{Elon Musk example}
-
-\begin{itemize}
-\item In an unpublished analysis, Baker examined Elon Musk's attempt to buy Twitter on Twitter's stock price
-\item Unlike his published paper, he's only going to use one form of ``penalized'' machine learning called ridge regression (which constrains what the coefficients can be in his model)
-\item He will use peer index and the S\&P500 for prediction purposes
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Purpose of the exercise}
-
-\begin{quote}
-``The goal here is to get a rough estimate of what TWTR would be trading at had Elon never put the stock in play. Note, this does not mean that the prediction is equivalent to what TWTR would trade at were the deal to not go through (without any damage payments), as Elon has likely destroyed value in the process. This prediction could in fact be used as a baseline price in any tort-type damages claim that the company would want to bring against Elon after the process is over.''
-\end{quote}
-
-\end{frame}
-
-\begin{frame}{Basic idea}
-
-\begin{figure}
-\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_3}
-\end{figure}
-\end{frame}
-
-\begin{frame}{Basic idea}
-
-\begin{figure}
-\includegraphics[scale=0.35]{./lecture_includes/baker_gelbach_4}
-\end{figure}
-\end{frame}
-
-\section{Concluding remarks}
-
-
-\begin{frame}{Abadie on the value and use of synthetic control}
-
-	\begin{figure}
-	\includegraphics[scale=0.5]{./lecture_includes/abadie_quote.png}
-	\end{figure}
-
-\end{frame}
 
 
 \begin{frame}{Summarizing}
