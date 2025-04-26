@@ -641,7 +641,6 @@ Let's look at an example from the 2010 JASA paper with Hainmueller and Diamond
 \end{frame}
 
 
-
 \begin{frame}{Example: California's Proposition 99}
 	
 	\begin{itemize}
@@ -744,9 +743,94 @@ Let's look at an example from the 2010 JASA paper with Hainmueller and Diamond
 \end{frame}
 
 
+\begin{frame}{Abadie's Suggestions for Dropping Units from the Donor Pool}
+  \begin{itemize}
+    \item \textbf{Treated Units:} 
+    \begin{itemize}
+      \item Drop units exposed to the same or similar intervention.
+      \item (e.g., States that passed similar laws during the study period.)
+    \end{itemize}
+    \item \textbf{Units with Large Idiosyncratic Shocks:}
+    \begin{itemize}
+      \item Drop units that experienced major unrelated events.
+      \item (e.g., Natural disasters, political crises.)
+    \end{itemize}
+    \item \textbf{Units Very Different in Observables:}
+    \begin{itemize}
+      \item Drop units very dissimilar in key characteristics to avoid interpolation bias.
+      \item (e.g., Comparing a small rural state to a large industrialized one.)
+    \end{itemize}
+    \item \textbf{Units Affected by Spillovers:}
+    \begin{itemize}
+      \item Drop units possibly influenced by the treated unit’s intervention.
+      \item (e.g., Neighboring regions affected by a tax reform.)
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Why Drop Units with Large Idiosyncratic Shocks?}
+  \begin{quote}
+    ``It is important to eliminate from the donor pool any units that may have suffered large idiosyncratic shocks to the outcome of interest during the study period, if it is judged that such shocks would not have affected the treated unit had it not been treated.'' — Abadie (2021)
+  \end{quote}
+  \vspace{0.5cm}
+  \begin{itemize}
+    \item \textbf{Intuition:} We want donor units that show how the treated unit would have evolved without the intervention.
+    \item Units hit by unrelated shocks add noise, distort the synthetic control, and are not informative about the treated unit’s natural counterfactual.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Example: Florida and Minimum Wage}
+  \begin{itemize}
+    \item Study: Impact of New Jersey's minimum wage hike on employment.
+    \item Florida (donor unit) experiences a major hurricane during the study window.
+    \begin{itemize}
+      \item Hurricane tanks employment — unrelated to wage policy.
+      \item Florida's employment outcomes diverge from normal labor market trends.
+      \item Including Florida would bias the synthetic control downward.
+    \end{itemize}
+    \item \textbf{Conclusion:} Drop Florida from the donor pool.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Why Large Idiosyncratic Shocks Are Dangerous (1)}
+  \begin{itemize}
+    \item Synthetic Control assumes donor units are affected only by common latent factors.
+    \item A large idiosyncratic shock breaks this assumption — the donor unit evolves for reasons unique to itself.
+    \item Weights cannot correct for shocks that are orthogonal to the underlying factor structure.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Why Large Idiosyncratic Shocks Are Dangerous (2)}
+  \begin{itemize}
+    \item Including shocked units introduces \textbf{irrelevant noise} into the counterfactual.
+    \item This noise pulls the synthetic control away from what would have naturally happened to the treated unit.
+    \item Better to construct the synthetic control from clean, comparably evolving units.
+  \end{itemize}
+\end{frame}
 
 
-\begin{frame}{Replication exercise}
+\begin{frame}{Sparsity and Weight Distribution}
+  \begin{itemize}
+    \item \textbf{Sparse Weights Are Typical:}
+    \begin{itemize}
+      \item Synthetic controls often assign positive weight to only a few donor units.
+      \item (e.g., 4 or 5 countries build the synthetic West Germany.)
+    \end{itemize}
+    \item \textbf{Spread-Out Weights Can Occur:}
+    \begin{itemize}
+      \item If the treated unit lies inside the donor convex hull, many small positive weights are possible.
+      \item (e.g., Each donor unit gets 2–5\% weight instead of a few getting large weights.)
+    \end{itemize}
+    \item \textbf{Why Prefer Sparsity?}
+    \begin{itemize}
+      \item Easier interpretation of which units drive the counterfactual.
+      \item Allows clear evaluation of potential biases.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Data exercise: Texas Builds Prisons}
 	
 	\begin{itemize}
 	\item The US has the highest prison population of any OECD country in the world 
@@ -968,6 +1052,15 @@ Governor Ann Richards (D) 1991-1995
 \section{Imperfect fit}
 
 \subsection{Bounding the bias}
+
+\begin{frame}
+\frametitle{Bias of Synthetic Control}
+
+\begin{itemize}
+\item Bias in synthetic control comes from failing to match the hidden forces that drive the treated unit's Y(0) potential outcome. 
+\item A factor model helps us formalize this idea — if we match well on pre-treatment outcomes, we are indirectly matching on those hidden factors, and the bias becomes small.
+\end{itemize}
+\end{frame}
 
 \begin{frame}{Suppose $Y^0$ is given by a factor model}
 
