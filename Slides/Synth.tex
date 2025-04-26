@@ -267,7 +267,7 @@ SDO &=& \texttt{Average causal effect}  \\
 	
 	\begin{itemize}
 
-	\item Potential outcomes: $$Y_{i,t}^j =\begin{cases} 1 \text{: accidents at time $t$ if trained} \\ 0 \text{: accidents at time $t$ if not trained} \end{cases}$$where $j$ indexes a hypothetical state of the world 
+	\item Potential outcomes: $$Y_{i,t}^j =\begin{cases} 1 \text{: accidents at time $t$ if self-driving vehicles} \\ 0 \text{: accidents at time $t$ if no self-driving vehicles} \end{cases}$$where $j$ indexes a hypothetical state of the world 
 
 	\end{itemize}
 \end{frame}
@@ -280,8 +280,16 @@ SDO &=& \texttt{Average causal effect}  \\
 	\begin{block}{Individual treatment effect}
 	    The individual treatment effect,  $\delta_i$, equals $Y_i^1-Y_i^0$
 	\end{block}
+Measures the effect of self-driving vehicles on accidents at the unit level. 
 
-Causal inference is a missing data problem in that no one knows the counterfactual because it is "missing" (though here it is more like "fictional" than missing).
+\bigskip
+
+Causal inference is a missing data problem in that no one knows the counterfactual because it is "missing" 
+
+\bigskip
+
+Though here it is more "fictional" than simply "missing" as these missing data \textbf{do not exist anywhere}
+
 	
 \end{frame}
 
@@ -297,8 +305,7 @@ Causal inference is a missing data problem in that no one knows the counterfactu
 	
 	\bigskip
 
-This is one of the most important policy parameters, if not the most important, and coincidentally it's also the parameter you get with synthetic control.  
-
+Example: The ATT is the averaging of the city's treatment effects who got the policy and it is the \textbf{only} causal effect both synthetic control \emph{and} difference-in-differences can estimate
 	
 \end{frame}
 
@@ -308,48 +315,34 @@ This is one of the most important policy parameters, if not the most important, 
 \section{Original synthetic control method}
 
 
-\begin{frame}{First outline}
-
-\begin{enumerate}
-\item \textbf{Abadie's synth}: We will start here as the foundation, understand it inside and out, practice with it, and try to learn good practices, as well as its bias
-\item \textbf{Demeaned synth}: Early modification by Bruno Ferman and Chris Pinto addressing the bias of synth in greater detail, and offering solutions
-\item \textbf{Augmented synth}: Further modifications of the biased synth, draws on earlier work by Abadie and Imbens (2011) in matching (bias correction)
-\end{enumerate}
-
-\end{frame}
-
-
-
-
 \begin{frame}[plain]
 	\begin{figure}
 	\includegraphics[scale=0.25]{./lecture_includes/currie_synth.png}
 	\end{figure}
 \end{frame}
 
-\begin{frame}{Synthetic Control}
-	
-	\begin{itemize}
-	\item Synthetic control has been called the most important innovation in causal inference of the last two decades by Athey and Imbens (2017)
-	\item Originally designed for comparative case studies, but ongoing developments have extended it to multiple treated units, differential timing, bias adjustment and even modifications to difference-in-differences
-	\item Methodologically synthetic control is at the frontier of ``causal panel models'' and modifications continue all the time
-	\item Many will move to synthetic control after throwing in the towel on Diff-in-Diff -- \emph{but why?}
-	\end{itemize}
-\end{frame}
 	
 \begin{frame}{What is a comparative case study?}
 
 \begin{itemize}
+\item Originally designed for comparative case studies, but now can accomodate multiple treated units, differential timing, bias adjustment, modifications to difference-in-differences
 \item Comparative case studies compare a single aggregate unit (like a country) to another unit (like another country) to make statements about causal effects from aggregate policies or events
 \item But the single treated unit can be any aggregate unit: a country, a state, school, firm, etc. 
-\item Social scientists traditionally approached comparative case studies in one of two ways:
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{What is a comparative case study?}
+
+ Social scientists traditionally approached comparative case studies in one of two ways:
+
 	\begin{enumerate}
 	\item \textcolor{blue}{Qualitatively} (political science)
 	\item \textcolor{red}{Quantitatively} (economics)
 	\end{enumerate}
-\end{itemize}
 
 \end{frame}
+
 
 
 \begin{frame}{First synthetic control paper}
@@ -512,9 +505,13 @@ Approximately 5 minutes
 \begin{frame}{Researcher's objectives}
 
 \begin{itemize}
-	\item Synthetic control is a constrained minimization problem where the target goal is the minimization of a vector of squared gaps in pre-treatment characteristics
+	\item Simple terms: Find a weighted average of donor pool units that "look like" the treatment group before the treatment happened \emph{on outcomes}
+	\item More technical way of saying it:
+		\begin{itemize}
+		\item Synthetic control is a constrained minimization problem where the target goal is the minimization of a vector of squared gaps in pre-treatment characteristics
 	\item Choice vector is an endogenous weights that are constant per control group unit over time and range from [0,1). 
 	\item Our goal here is to reproduce the counterfactual of a treated unit by finding the combination of untreated units that best resembles the treated unit \emph{before} the intervention in terms of the values of $k$ relevant covariates (predictors of the outcome of interest)
+		\end{itemize}
 	\item Method selects \emph{weighted average of all potential comparison units} that best resembles the characteristics of the treated unit(s) - called the ``synthetic control''
 \end{itemize}
 
