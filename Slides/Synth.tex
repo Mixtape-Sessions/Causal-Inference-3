@@ -1642,48 +1642,83 @@ Y_1^{\text{aug},0} = \sum_{D_j=0} \widehat{w}_j^{\text{SCM}} Y_j + (X_1 - X_0' \
 
 
 
-\begin{frame}{Conformal Inference}
+\begin{frame}{Inference for Augmented SCM}
+\small
+\begin{itemize}
+  \item Two main approaches for confidence intervals:
+  \begin{itemize}
+    \item \textbf{Conformal Inference} (Chernozhukov et al., 2019) (Synthetic Control predicts the gap; conformal inference tells you how uncertain that gap is)
+    \item \textbf{Jackknife+} (Barber et al., 2019)
+  \end{itemize}
+  \item Both methods are non-parametric and valid in small samples under certain assumptions.
+  \item Both construct CIs without relying on strong parametric models.
+\end{itemize}
+\end{frame}
 
-Inference will be based on ``conformal inference'' method by Chernozhukov et al. (2019).  We will get 95\% point-wide confidence intervals. They also outline a jackknife method by Barber et al (2019). 
+\begin{frame}{What Conformal and Jackknife+ Do}
+\small
+\begin{itemize}
+  \item \textbf{Conformal Inference}:
+  \begin{itemize}
+    \item Test many hypothetical post-treatment outcomes.
+    \item Keep the ones where residuals look like pre-treatment residuals.
+    \item CI is the set of plausible post-treatment outcomes.
+  \end{itemize}
+  \item \textbf{Jackknife+}:
+  \begin{itemize}
+    \item Recompute estimates leaving out each pre-treatment time point.
+    \item Build CI based on variability across these leave-one-out estimates.
+  \end{itemize}
+  \item \textbf{Interpretation}: 
+  \begin{itemize}
+    \item If the CI contains zero, the estimated effect is not distinguishable from zero at 95\% confidence.
+  \end{itemize}
+\end{itemize}
+\end{frame}
 
+\begin{frame}{Why Conformal Confidence Intervals May Be Wide}
+\small
+\begin{itemize}
+  \item Conformal inference gives valid confidence intervals even when your model might be misspecified.
+  \item To guarantee coverage, it must be conservative — especially when information is limited.
+  \item If you have few pre-treatment periods, conformal inference allows for a wide range of possible post-treatment outcomes.
+  \item $\Rightarrow$ Result: Confidence intervals may appear visually wide.
+\end{itemize}
+
+\vspace{0.5cm}
+
+\textbf{Example:}
+\begin{itemize}
+  \item 5 pre-treatment years $\Rightarrow$ very cautious bands, large CIs.
+  \item 30 pre-treatment years $\Rightarrow$ tighter bands, smaller CIs.
+\end{itemize}
 \end{frame}
 
 
-\begin{frame}{Steps of conformal Inference}
-
-\begin{enumerate}
-\item [1] Choose a sharp null (i.e., no unit-level treatment effects, $\delta_0=0$)
-	\begin{itemize}
-	\item Enforce the null by creating an adjusted post-treatment outcome for the treated unit equal to $Y_{1T}-\delta_0$ (in other words, we get CI on the post-treatment outcomes, not the pre-treatment)
-	\item Augment the original dataset to include the post-treatment time period $T$ with the adjusted outcome and use the estimator to obtain the adjusted weights $\widehat{w(\delta_0)}$
-	\item Compute a p-value by assessing whether the adjusted residual conforms with the pre-treatment residuals (see Appendix A for the exact formula)
-	\end{itemize}
-\end{enumerate}
-
-
-\end{frame}
-
-
-\begin{frame}{Steps of conformal Inference}
-
-\begin{enumerate}
-\item [2] Compute a level $\alpha$ for $\delta$ by inverting the hypothesis test (see Appendix A for the exact formula)
-	\begin{itemize}
-	\item Chernozhukov et al. (2019) provide several conditions for which approximate or exact finite-sample validity of the $p$-values (and hence coverage of the predicted confidence intervals) can be achieved)
-	\end{itemize}
-\end{enumerate}
-
-See Appendix A for more details
-
-\end{frame}
-
-
-\begin{frame}{Simulations (summarized)}
+\begin{frame}
+\frametitle{Conformal Inference Application}
 
 \begin{itemize}
-\item They examine the performance of synth against ridge, Augmented synth with ridge regularization, demeaned synth, and fixed effects under four DGP
+  \item Chernozhukov, Wüthrich, and Zhu (2022) reanalyze Cunningham and Shah (2018) using conformal inference applied to Synthetic Control.
+  \item Main conclusion: Decriminalizing indoor prostitution in Rhode Island significantly decreased female gonorrhea incidence.
+  \item The effect becomes statistically significant about 3–4 years after the decriminalization event.
+  \item Placebo tests support credibility of Synthetic Control and Constrained Lasso methods.
+\end{itemize}
+
+
+\vspace{0.5cm}
+\begin{center}
+\includegraphics[width=0.7\linewidth]{./lecture_includes/figure5_conformal.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Simulations}
+
+\begin{itemize}
+\item Now let's look at an example
+\item Authors compare synth against ridge, Augmented synth with ridge regularization, demeaned synth, and fixed effects under four DGP
 \item Augmenting synth with a ridge outcome regression reduces bias relative to synth alone in all four simulations
-\item This underscores the importance of the recommendation Abadie, et al. (2015) make which is that synth should be used in settings with excellent pre-treatment fit
 \item They also examine a real situation involving Kansas tax cuts in 2012
 \end{itemize}
 
@@ -1693,16 +1728,22 @@ See Appendix A for more details
 
 \imageframe{./lecture_includes/aug_6.png}
 
-\begin{frame}{Couple of minor points}
+\begin{frame}{Replication}
 
 \begin{itemize}
-\item Hyper parameter chosen using cross validation
-\item This can be extended to auxiliary covariates as opposed to just lagged outcomes (section 6)
+\item We will now show code that does it in R and Stata
+	\begin{itemize}
+	\item R: "augsynth" by the authors
+	\item Stata: "allsynth" that does several (including augsynth)
+	\end{itemize}
+\item Two examples to hopefully illustrate the bias and improvements and the lack of bias and no change in another \texttt{texas_augsynth.R} and \texttt{texas_allsynth.do}
+	\begin{itemize}
+	\item Smoking: augmented synth improves it
+	\item Prisons: augmented synth does nothing
+	\end{itemize}
 \end{itemize}
 
 \end{frame}
-
-
 
 
 
@@ -1721,22 +1762,6 @@ See Appendix A for more details
 
 
 
-\begin{frame}{Replication}
-
-\begin{itemize}
-\item We will now show code that does it in R and Stata
-	\begin{itemize}
-	\item R: "augsynth" by the authors
-	\item Stata: "allsynth" that does several (including augsynth)
-	\end{itemize}
-\item Two examples to hopefully illustrate the bias and improvements and the lack of bias and no change in another
-	\begin{itemize}
-	\item Smoking: augmented synth improves it
-	\item Prisons: augmented synth does nothing
-	\end{itemize}
-\end{itemize}
-
-\end{frame}
 
 \subsection{Applying Machine Learning to Event studies from Finance}
 
