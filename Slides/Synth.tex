@@ -2324,7 +2324,7 @@ All of causal inference is imputation -- but some methods are more explicit and 
 \end{itemize}
 
 \begin{center}
-\includegraphics[width=0.7\linewidth]{./lecture_includes/flowchart.png}
+\includegraphics[width=0.5\linewidth]{./lecture_includes/flowchart.png}
 \end{center}
 \end{frame}
 
@@ -2773,328 +2773,145 @@ fect in Stata: \url{https://yiqingxu.org/packages/fect/stata/fect_md.html}
 
 \subsection{Synthetic difference-in-differences}
 
-\begin{frame}
-\frametitle{The Basic Idea of SDID}
-
+\begin{frame}{Motivation for Synthetic DiD}
+\small
 \begin{itemize}
-    \item Combines ideas from synthetic control and difference-in-differences.
-        \begin{itemize}
-            \item Matches control units to treated units with pre-treatment weights.
-            \item Addresses biases from imperfect matching.
-        \end{itemize}
-    \item Introduces time weights to prioritize key pre-treatment periods.
-    \item Balances precision from synthetic control with broader trends from DID.
+  \item Difference-in-Differences (DiD) assumes parallel trends but can fail if treated units and controls are too different.
+  \item Synthetic Control (SC) matches treated units better, but struggles with few pre-treatment periods or noisy data.
+  \item \textbf{Synthetic Difference-in-Differences (SDID)} combines strengths of both:
+  \begin{itemize}
+    \item Matches pre-treatment trends (SC),
+    \item Adjusts for common time trends (DiD).
+  \end{itemize}
 \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-\frametitle{How SDID Works}
-
-\begin{itemize}
-    \item Uses unit and time fixed effects for bias reduction.
-        \begin{itemize}
-            \item Accounts for unit-specific traits (e.g., state-level differences).
-            \item Captures common period effects (e.g., economic booms).
-        \end{itemize}
-    \item Derives time weights directly from the data.
-    \item Flexible tool for causal inference in complex panel data.
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}
-\frametitle{Intuition Behind SDID}
-
-\begin{itemize}
-    \item Approximates parallel trends by reweighting data.
-        \begin{itemize}
-            \item Unit weights align control and treated units pre-treatment.
-            \item Time weights balance trends across periods.
-        \end{itemize}
-    \item Reduces reliance on strong assumptions about pre-existing trends.
-    \item Enhances robustness when pre-existing trends don’t align perfectly.
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Assumptions in Synthetic Difference-in-Differences (SDID)}
-
-In both synthetic control and difference-in-differences, assumptions about pre-treatment trends are central. SDID combines these methods to leverage their strengths:
-
-\begin{itemize}
-    \item Uses pre-treatment trends to reweight treated and control groups.
-    \item Constructs a comparison group that mimics the treated group's trends.
-    \item Relies on four key assumptions for identification.
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Assumption 1: Error Properties}
-
-\begin{itemize}
-    \item Errors are independent, identically distributed Gaussian vectors.
-    \item Covariance matrix has bounded eigenvalues.
-    \item Assumption is stricter than traditional DiD or synthetic control, which only assume error independence.
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Assumption 2: Sample Sizes}
-
-\begin{itemize}
-    \item Large sample sizes are critical for SDID:
-    \begin{itemize}
-        \item Number of control units ($N_{co}$) and pre-treatment periods ($T_{pre}$) must be large.
-        \item Product of treated units ($N_{tr}$) and post-treatment periods ($T_{post}$) should also be large.
-    \end{itemize}
-    \item Balance between $T_{pre}$ and $N_{co}$ ensures effective reweighting.
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Assumptions 3 and 4}
-
-\textbf{Assumption 3: Systematic Component Properties}
-\begin{itemize}
-    \item The systematic component ($L$) has a limited number of large singular values.
-    \item This low-rank structure captures broad patterns while reducing noise.
-    \item Goes beyond traditional DiD and synthetic control.
-\end{itemize}
-
-\vspace{0.5cm}
-
-\textbf{Assumption 4: Weighting Properties and $L$}
-\begin{itemize}
-    \item "Oracle" weights derived from $L$ reduce systematic bias.
-    \item Ensures parallel trends after reweighting without requiring perfect balance.
-\end{itemize}
-
 \end{frame}
 
 
 
 
-
-
-\begin{frame}
-\frametitle{Steps in SDID Estimation}
-
+\begin{frame}{Big Picture: What SDID Does}
+\small
 \begin{itemize}
-    \item Identify unit weights for control units to match treated pre-treatment trends.
-    \item Select time weights to balance pre- and post-treatment trends.
-    \item Combine weights in regression to estimate the ATT.
+  \item \textbf{Unit Weights}: Match treated units to control units (like Synthetic Control).
+  \item \textbf{Time Weights}: Adjust for changing trends over time (like DiD).
+  \item \textbf{Goal}: Achieve better balance across units and time without assuming perfect parallel trends.
 \end{itemize}
-
 \end{frame}
 
 
 
-\begin{frame}
-\frametitle{SDID Estimation Process}
 
+\begin{frame}{Key Assumptions Behind SDID}
+\small
 \begin{itemize}
-    \item Calculates unit and time weights to optimize comparison groups.
-    \item Uses regularization to prevent overfitting.
-        \begin{itemize}
-            \item Aligns with one-period outcome changes for untreated units.
-        \end{itemize}
-    \item Solves constrained least-squares for unit weights (\(\hat{w}\)).
+  \item Large number of control units and pre-treatment periods.
+  \item Systematic trends (latent factors) can be well-approximated by a low-rank structure.
+  \item Errors are light-tailed and roughly independent across cells.
 \end{itemize}
-
 \end{frame}
 
-\begin{frame}{Estimation of SDiD}
 
-Synthetic DiD combines elements of DiD and synthetic control:
+\begin{frame}{Key Assumptions Behind SDID}
+\small
 \begin{itemize}
-    \item Compute the regularization parameter to align with typical one-period outcome changes:
+  \item \textbf{1. Light-Tailed Errors}: Random shocks are not too wild (no extreme outliers).
+  \item \textbf{2. Sufficient Data}: Enough control units and pre-treatment periods to estimate trends reliably.
+  \item \textbf{3. Low-Rank Structure}: Systematic trends can be explained by a few hidden patterns (not too complicated).
+  \item \textbf{4. Good Balancing}: The unit and time weights can correct for trend differences without needing perfect matching.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Unit and Time Weights: Intuition}
+\small
+\begin{itemize}
+  \item \textbf{Unit Weights (\(\hat{w}\))}: 
+  Build a weighted combination of control units to match treated units before treatment.
+  \item \textbf{Time Weights (\(\hat{\lambda}\))}: 
+  Prioritize pre-treatment periods that are most predictive for post-treatment behavior.
+  \item \textbf{Goal}: 
+  Create a flexible, balanced counterfactual that adjusts across units and time.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Estimating Unit and Time Weights}
+\small
+\begin{itemize}
+  \item \textbf{Unit Weights (\(\hat{w}\))}: 
+  \begin{itemize}
+    \item Estimated via constrained least squares to match pre-treatment outcomes.
+    \item Non-negative, sum to one (plus regularization).
+  \end{itemize}
+  \item \textbf{Time Weights (\(\hat{\lambda}\))}: 
+  \begin{itemize}
+    \item Estimated via constrained least squares to prioritize informative pre-treatment periods.
+  \end{itemize}
+  \item \textbf{Regularization}: 
+  \begin{itemize}
+    \item Aligns regularization strength with typical one-period changes among untreated units:
     \[
-    \Delta_{it} = Y_{i(t+1)} - Y_{it} \quad \text{(unexposed units)}.
+    \Delta_{it} = Y_{i(t+1)} - Y_{it}
     \]
+    \item Prevents overfitting and ensures generalization.
+  \end{itemize}
 \end{itemize}
+\end{frame}
 
+\begin{frame}{Steps in SDID Estimation}
+\small
+\begin{itemize}
+  \item Step 1: Identify unit weights (\(\hat{w}\)) to match treated and control units pre-treatment.
+  \item Step 2: Identify time weights (\(\hat{\lambda}\)) to balance trends across periods.
+  \item Step 3: Combine unit and time weights in a weighted regression to estimate ATT.
+\end{itemize}
 \end{frame}
 
 
 
 
 
-\begin{frame}
-\frametitle{Unit and Time Weights}
-
-\begin{itemize}
-    \item \textbf{Unit Weights (\(\hat{w}\)):}
-        \begin{itemize}
-            \item Match treated and control units pre-treatment.
-            \item Allows for a constant gap, relaxing traditional SC constraints.
-        \end{itemize}
-    \item \textbf{Time Weights (\(\hat{\lambda}\)):}
-        \begin{itemize}
-            \item Balance temporal dynamics.
-            \item Prioritize informative pre-treatment periods.
-        \end{itemize}
-\end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{Estimating Weights}
-
-\begin{itemize}
-    \item Unit Weights:
-    \begin{itemize}
-        \item Estimated via constrained least squares on pre-treatment data.
-        \item Weights are non-negative, sum to one, and allow for a level shift with regularization.
-    \end{itemize}
-    \item Time Weights:
-    \begin{itemize}
-        \item Estimated via constrained least squares on control data.
-        \item Prioritizes periods just before treatment without spreading weights broadly.
-    \end{itemize}
-\end{itemize}
-
-\end{frame}
 
 
 
-\begin{frame}{Estimation of SDiD: Unit Weights}
-
-\begin{itemize}
-    \item Estimate unit weights \(\widehat{w}\) to define a synthetic control unit.
-    \item Equation: 
-    \[
-    \widehat{w}_1 + \widehat{w}^T Y_{j,\text{pre}} \approx Y_{1,\text{pre}}
-    \]
-    \item Unlike traditional synthetic control, allows for an intercept term, relaxing perfect matching requirements.
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Estimation of SDiD: Time Weights}
-
-\begin{itemize}
-    \item Estimate time weights \(\widehat{\lambda}\) to align synthetic pre-treatment periods:
-    \[
-    \widehat{\lambda}_1 + Y_{1,\text{pre}} \widehat{\lambda} \approx Y_{1,\text{post}}
-    \]
-    \item Focuses on identifying pre-treatment periods most informative for post-treatment behavior.
-\end{itemize}
-
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Combined Estimation}
-
-\begin{itemize}
-    \item SDID estimator combines unit and time weights.
-    \item Weighted regression minimizes residuals across units and time.
-    \item Ensures counterfactual outcomes align with treated outcomes pre-treatment.
-\end{itemize}
-
-\end{frame}
-
-
-
-
-\begin{frame}
-\frametitle{Outcome Model in SDID}
-
-\begin{itemize}
-    \item Observed outcomes (\(Y\)) consist of:
-        \begin{itemize}
-            \item Systematic component (\(L\)).
-            \item Treatment effect (\(D \circ \delta\)).
-            \item Idiosyncratic error (\(E\)).
-        \end{itemize}
-    \item \(D \circ \delta\) isolates ATT by selecting treated units and periods.
-    \item \(L\) captures trends not explained by treatment or noise.
-\end{itemize}
-
-\end{frame}
-
-
-
-
-\begin{frame}
-\frametitle{Oracle Weights}
-
-\begin{itemize}
-    \item Theoretical "ideal" weights for unit (\(\tilde{\omega}\)) and time (\(\tilde{\lambda}\)).
-    \item Minimize bias by balancing systematic component (\(L\)).
-    \item Data-driven weights (\(\hat{\omega}, \hat{\lambda}\)) approximate oracle weights.
-        \begin{itemize}
-            \item Ensure pre-treatment balance.
-            \item Converge to oracle weights as sample size increases.
-        \end{itemize}
-\end{itemize}
-
-\end{frame}
-
-
-
-\begin{frame}{Outcome Model}
-\begin{itemize}
-\item Outcome is a combination of systematic trends, treatment effects, and noise:
+\begin{frame}{Outcome Model Behind SDID}
+\small
 \[
 Y = L + D \circ \delta + E
 \]
-\item Components:
-    \begin{itemize}
-    \item \(L\): systematic trends across units and time (\(L = \Gamma \Upsilon^\top\))
-    \item \(D \circ \delta\): treatment effects applied selectively
-    \item \(E\): idiosyncratic noise
-    \end{itemize}
-\item \(L\) represents shared patterns unaffected by treatment or randomness.
+\begin{itemize}
+  \item \(L\): Systematic trends across units and time (e.g., shared economic factors).
+  \item \(D \circ \delta\): Treatment effects applied selectively to treated units and periods.
+  \item \(E\): Idiosyncratic noise.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Role of Systematic Component \(L\)}
+
+\begin{frame}{Oracle vs. Empirical Weights}
+\small
 \begin{itemize}
-\item Captures trends unrelated to treatment or random noise.
-\item Potential source of confounding if not properly controlled.
-\item Treated and control groups must balance \(L\) pre-treatment for valid comparison.
+  \item \textbf{Oracle Weights}: Theoretical best weights that perfectly balance \(L\) (systematic trends).
+  \item \textbf{Empirical Weights}: Estimated from the data, approximate the oracle weights.
+  \item Goal: Pre-treatment balance without needing perfect matches or perfect parallel trends.
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Oracle Weights}
-\begin{itemize}
-\item Theoretical weights (\(\tilde{\omega}, \tilde{\lambda}\)) minimize bias in estimating treatment effects.
-\item Balance systematic trends (\(L\)) across treated and control groups.
-\item Provide a benchmark for robust causal inference.
-\end{itemize}
-\end{frame}
 
-\begin{frame}{Data-Driven Weights}
-\begin{itemize}
-\item Empirical weights (\(\hat{\omega}, \hat{\lambda}\)) approximate oracle weights.
-\item Constructed to balance treated and control trends pre-treatment.
-\item Approximation improves with larger sample sizes.
-\end{itemize}
-\end{frame}
 
-\begin{frame}{Weighted Regression for SDiD}
 
-\begin{itemize}
-    \item Final estimation uses weighted DID regression:
-\end{itemize}
 
+\begin{frame}{Combined SDID Estimation}
+\small
 \[
-\textrm{argmin}_{\tau, \mu, \alpha, \beta} \sum_{i=1}^N \sum_{t=1}^T \left( Y_{it} - \mu - \alpha_i - \beta_t - W_{it}\tau \right)^2 \widehat{w}_i^{\text{SDiD}} \widehat{\lambda_t}^{\text{SDiD}}
+\text{argmin}_{\tau, \mu, \alpha, \beta} \sum_{i=1}^N \sum_{t=1}^T (Y_{it} - \mu - \alpha_i - \beta_t - W_{it} \tau)^2 \hat{w}_i \hat{\lambda}_t
 \]
-
+\begin{itemize}
+  \item Combines unit and time weights in a weighted regression.
+  \item Matches treated and control units, adjusting across units and time.
+  \item Ensures counterfactual trends are well aligned without assuming perfect parallel trends.
+\end{itemize}
 \end{frame}
-
 
 
 
@@ -3107,11 +2924,11 @@ Y = L + D \circ \delta + E
     \]
     \item Difference-in-Differences (DiD):
     \[
-    \textrm{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2
+    \text{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2
     \]
     \item Synthetic Difference-in-Differences (SDiD):
     \[
-    \textrm{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2 w_i \lambda_t
+    \text{argmin}_{\tau, \lambda, \alpha} \sum_{i,t} (Y_{it} - \lambda_t - \alpha_i - \tau D_{it})^2 w_i \lambda_t
     \]
 \end{itemize}
 
