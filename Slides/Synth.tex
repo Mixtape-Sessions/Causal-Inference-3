@@ -2312,6 +2312,24 @@ All of causal inference is imputation -- but some methods are more explicit and 
 \end{itemize}
 \end{frame}
 
+
+
+\begin{frame}{Roadmap: From Missing Outcomes to Matrix Completion}
+
+\begin{itemize}
+  \item Causal inference often reduces to \textbf{imputing missing potential outcomes}.
+  \item Different designs (DiD, SCM) create different \textbf{missingness patterns}.
+  \item Whether the matrix is "thin" or "fat" shapes the \textbf{regression strategy} for imputation.
+  \item \textbf{Matrix Completion with Nuclear Norm Regularization} generalizes across both traditions.
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=0.7\linewidth]{./lecture_includes/flowchart.png}
+\end{center}
+\end{frame}
+
+
+
 \begin{frame}[plain]
 \small
 Here's a matrix of untreated potential outcomes, $Y^0$, representing units over time periods $t$:
@@ -2450,26 +2468,36 @@ Once we have the imputed untreated outcomes, we can calculate individual treatme
 
 
 
-\begin{frame}{Block structure}
-
+\begin{frame}{Missingness Patterns in Causal Inference}
+\small
 \begin{itemize}
-\item Lots of new and old terms -- unconfoundedness, vertical and horizontal regression, fat and thin matrices.  
-\item We define the matrix first in terms of its block structure which is describing where and when the missingness is occurring in the matrix
-\item Then we will discuss these concepts related to the direction of the regressions themselves
+  \item In causal inference, we often work with matrices of outcomes — some entries are missing because of treatment.
+  \item Different designs create different patterns of missingness:
+  \begin{itemize}
+    \item \textbf{Unconfoundedness}: missing outcomes only after treatment.
+    \item \textbf{Staggered adoption or event studies}: missingness varies across units and periods.
+    \item \textbf{Synthetic control}: typically missing a treated unit’s potential outcomes after a specific intervention.
+  \end{itemize}
 \end{itemize}
-
 \end{frame}
 
-\begin{frame}{Unconfoundedness}
 
+
+
+\begin{frame}{Single Treated-Period Block Structure (Unconfoundedness)}
+\small
 \begin{itemize}
-\item Much of the program evaluation literature estimates an average treatment effect (e.g., ATT) under unconfoundedness (see Lalonde 1986; Dehejia 2002; Smith and Todd 2005)
-\item But the focus is on a simple setup where the missingness is the last period (i.e., the post treatment period)
-\item In LaLonde (1986), NSW treats the workers, and then you don't observe $Y^0$ for the treated group in the \emph{last period}, so you use the comparison group for imputation of missing potential outcomes under presumed unconfoundedness (i.e., randomized within dimensions of $X$)
-\item Athey et al call this the ``single-\textcolor{purple}{treated-period} block structure'' because only one \emph{period} is missing
+  \item Under unconfoundedness, missing outcomes occur only in the post-treatment period.
+  \item Example: LaLonde (1986) — National Supported Work program (NSW).
+  \begin{itemize}
+    \item Treated workers are missing untreated earnings outcomes in the final period.
+    \item Use comparison group outcomes to impute missing potential outcomes.
+  \end{itemize}
+  \item Athey et al. call this the ``single treated-period block structure''.
 \end{itemize}
-
 \end{frame}
+
+
 
 \begin{frame}{Single-treated-period block structure}
 
@@ -2516,7 +2544,7 @@ So all of these so-called designs can be expressed in terms of missingness in th
 \end{frame}
 
 
-\begin{frame}{Thin and Fat matrices}
+\begin{frame}{Why Matrix Shape Matters for Imputation}
 
 \begin{itemize}
 \item Next we must consider the relative number of panel units $N$ and time periods $T$ because this also shapes which regression style will be used for imputation
@@ -2527,106 +2555,215 @@ So all of these so-called designs can be expressed in terms of missingness in th
 \end{frame}
 
 
-\begin{frame}{Vertical and horizontal regression}
-
+\begin{frame}{Horizontal Regression}
+\small
 \begin{itemize}
-\item Unconfoundedness has that single-treated period block structure with a thin matrix ($N>>T$). 
-\item Uses a large number of $N$ units to impute missing potential outcomes in the last period using controls with similar lagged outcomes (horizontal regression)
-\item Horizontal regression holds under unconfoundedness
+  \item Under unconfoundedness, we have a "thin" matrix: many units ($N$) but few periods ($T$).
+  \item Horizontal regression means regressing across units:
+  \[
+  Y_{iT} \sim X_i
+  \]
+  where $X_i$ are pre-treatment outcomes or covariates for unit $i$.
+  \item Horizontal regression uses large $N$ to impute missing $Y^0$ at $T$.
 \end{itemize}
-
 \end{frame}
 
-\begin{frame}{Vertical regression}
 
+
+
+\begin{frame}{Vertical Regression}
+\small
 \begin{itemize}
-\item Doudchenko and Imbens (2016) and Pinto and Furman (2021) show that synthetic control can be interpreted as regressing the outcomes for the treated prior to treatment on the outcomes for controls in the same period
-\item It is as though you are regressing the treatment group outcomes onto the donor pool outcomes (up and down) but with restrictions on what the coefficients can be -- they cannot be negative and they must sum to one
-\item Once synthetic control is framed as a vertical regression, it opens up the possibilities of different model specifications (like including an intercept which will shift the convex hull around which is what Doudchenko and Imbens (2016, unpublished) proposed)
+  \item In synthetic control, we match across time for a single treated unit.
+  \item Vertical regression regresses the treated unit’s pre-treatment outcomes onto donor units’ pre-treatment outcomes:
+  \[
+  Y_{1t} \sim Y_{2t}, Y_{3t}, \dotsc, Y_{Nt} \quad \text{(for } t=1,\dotsc,T_0 \text{)}
+  \]
+  \item Synthetic control imposes:
+  \begin{itemize}
+    \item Non-negative weights,
+    \item Weights sum to one.
+  \end{itemize}
 \end{itemize}
-
 \end{frame}
+
+
+
 
 \begin{frame}{Fixed effects and factor models}
 
 \begin{itemize}
 \item Both horizontal and vertical regressions exploit unique patterns in the data -- one goes left to right, one goes up and down
-\item An alternative to each of them though is to consider an approach that allows for the exploitation of both stable patterns over time and stable patterns across units
-\item Matrix completion with nuclear norm does both (and we will see this again in their synthetic difference-in-differences)
+\item An alternative is to combine both stable patterns across units and across time.
+\item Matrix completion with nuclear norm regularization (MC-NNM) does this by leveraging low-rank structure.
 \end{itemize}
 
 \end{frame}
 
-\begin{frame}{Matrix completion with nuclear norm}
 
+\begin{frame}{Matrix Completion Model}
+\small
 \begin{itemize}
-\item Model the $N \times T$ matrix of complete outcomes data matrix $Y$ as: $$Y = L* + e$$where $E[e|L*]=0$
-\item The error term can be thought of as measurement error if you need a frame to think about it
-\item So you have this complete matrix, L*, and zero mean conditional independence holds
+\item Model the $N \times T$ matrix of outcomes as:
+\[
+Y = L^* + e
+\]
+\item $E[e|L^*]=0$, $e$ can be thought of as idiosyncratic noise or measurement error and $L^*$ is the "true" low-rank structure we want to recover.
 \end{itemize}
-
 \end{frame}
 
-\begin{frame}{Assumption regarding error and matrix}
 
-\begin{block}{Matrix assumptions}
-$e$ is independent of $L*$ and the elements of $e$ are $\sigma$-sub-Gaussian and independent of each other
+
+\begin{frame}{Error Assumptions}
+\small
+\begin{block}{Matrix Assumptions}
+$e$ is independent of $L^*$, and the elements of $e$ are $\sigma$-sub-Gaussian and independent across cells.
 \end{block}
 
+Sub-Gaussian means the error has light tails (bounded variability), like a normal distribution, which controls large deviations.
 
 \end{frame}
 
-\begin{frame}{Comment about regularization}	
-	
+
+
+\begin{frame}{Why Regularization is Needed}
+\small
 \begin{itemize}
-\item You could minimize the sum of squared differences but if the objective function doesn't depend on $L*$, the estimator would just spit back $Y$ and $\delta=0$. 
-\item Authors add a penalty term $||\lambda||$ to the objective function, but even then, not all of them do well. 
-\item It matters matters whether you regularize the fixed effects or not 
+\item Without regularization, the estimator would just return $Y$ and ignore structure ($\delta = 0$).
+\item We add a penalty on the complexity of $L^*$ to encourage low-rank recovery.
+\item Different penalties exist — MC-NNM uses the nuclear norm, not lasso or elastic net.
 \end{itemize}
-
 \end{frame}
 
-\begin{frame}{Estimator}
 
-\begin{eqnarray*}
-L* = \widehat{L} + \widehat{\Gamma}1_T^T + I_N\widehat{\Delta}^T
-\end{eqnarray*}where the objective function is:
-
-\begin{eqnarray*}
-= arg\text{ }min_{L,\Gamma,\Delta} \bigg \{ \frac{1}{O} || P_0(Y-L-\Gamma 1_T^T - 1_N\Delta^T)||_F^2 + \Lambda||L|| \bigg \}
-\end{eqnarray*}
-
-\end{frame}
-
-\begin{frame}{Fixed effects and regularization}
-
+\begin{frame}{What Does "Norm" Mean?}
+\small
 \begin{itemize}
-\item The penalty will likely be the nuclear norm but notice that the fixed effects are outside the penalty term.  You could subsume them into $L$, they say, but they recommend you not doing this.
-\item Fraction of observations is relatively high and so the fixed effects can actually be estimated separately (apparently that is one difference between MCNN and the rest of the MC literature)
-\item The penalty will be chosen using cross-validation
-\item One advantage of NN is its fast and convex optimization programs will do it, whereas some others won't because of the large $N$ or $T$ issues
+  \item A \textbf{norm} measures the size or magnitude of a vector or matrix.
+  \item In synthetic control:
+  \[
+  \|X_1 - X_0 W\| \quad \text{measures pre-treatment fit (squared discrepancies)}
+  \]
+  \item In matrix completion:
+  \[
+  \|L\|_* \quad \text{(nuclear norm) measures complexity (sum of singular values)}
+  \]
+  \item Norms inside the objective function measure how big the error is;
+  Norms inside the penalty term measure how complex the solution is.
 \end{itemize}
-
 \end{frame}
 
-
-\begin{frame}{Parting comments}
-
-\begin{itemize}
-\item Though this model  can be used for differential timing but at the moment, we haven't seen much in terms of contrasting it with the robust diff-in-diff estimators like Borusyak, et al. (2021), Callaway and Sant'Anna (2020) or any of the others
-\item This is going to come down to parallel trends versus the factor models, and communicating the improvements gained with synthetic control as you move away from the simplest comparative case study is likely to be challenging
-\item You choose the estimator based on the problem you're studying and the assumptions -- you must justify it, no one else can, but you do so by appealing to assumptions
-\end{itemize}
-
-\end{frame}
-
-\begin{frame}{Code}
-
-R: \url{https://github.com/xuyiqing/gsynth}
+\begin{frame}{Illustrating the Frobenius and Nuclear Norms}
+\small
+\[
+A = \begin{pmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23}
+\end{pmatrix}
+\]
 
 \bigskip
 
-Stata: fect \url{https://yiqingxu.org/packages/fect/stata/fect_md.html}
+\begin{itemize}
+  \item \textbf{Frobenius norm} $\|A\|_F$:
+  \[
+  \|A\|_F = \sqrt{a_{11}^2 + a_{12}^2 + a_{13}^2 + a_{21}^2 + a_{22}^2 + a_{23}^2}
+  \]
+  Measures the overall size (energy) of the matrix.
+  
+  \item \textbf{Nuclear norm} $\|A\|_*$:
+  \[
+  \|A\|_* = \text{sum of singular values of } A
+  \]
+  Measures the complexity (effective number of dimensions) of the matrix.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Key Idea Before the Estimator}
+\small
+\begin{itemize}
+  \item Two things matter in matrix completion:
+  \begin{itemize}
+    \item \textbf{Fit}: How well we match the observed outcomes (measured by Frobenius norm).
+    \item \textbf{Simplicity}: How simple the underlying structure is (measured by Nuclear norm).
+  \end{itemize}
+  \item The estimator balances these two goals:
+  \begin{itemize}
+    \item Match the observed data well,
+    \item Keep the solution simple and low-rank.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Key Idea Before the Estimator}
+\small
+\begin{itemize}
+  \item Two things matter in matrix completion:
+  \begin{itemize}
+    \item \textbf{Fit}: How well we match the observed outcomes (measured by Frobenius norm).
+    \item \textbf{Simplicity}: How simple the underlying structure is (measured by Nuclear norm).
+  \end{itemize}
+  \item The estimator balances these two goals:
+  \begin{itemize}
+    \item Match the observed data well,
+    \item Keep the solution simple and low-rank.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Estimator Formulation}
+\small
+
+$$L^* = \widehat{L} + \widehat{\Gamma} 1_T^T + 1_N \widehat{\Delta}^T$$
+\bigskip
+
+Objective:
+$$ \arg\min_{L, \Gamma, \Delta} \left\{ \frac{1}{O} \|P_0(Y - L - \Gamma 1_T^T - 1_N \Delta^T)\|_F^2 + \Lambda \|L\|_* \right\}$$
+
+where $\|\cdot\|_F$ is Frobenius norm, $\|\cdot\|_*$ is nuclear norm.
+\end{frame}
+
+
+
+
+\begin{frame}{Fixed Effects and Regularization}
+\small
+\begin{itemize}
+\item Fixed effects ($\Gamma$, $\Delta$) are \textbf{not} penalized — only $L$ is regularized.
+\item This separation helps when the fraction of observed outcomes is relatively large.
+\item The nuclear norm penalty is chosen via cross-validation.
+\item Advantage: convex optimization is fast and reliable even when $N$ or $T$ is large.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Recap: What Matrix Completion Does}
+\small
+\begin{itemize}
+  \item Matrix completion with nuclear norm (MC-NNM) estimates missing potential outcomes.
+  \item It balances two goals:
+  \begin{itemize}
+    \item \textbf{Fit}: Match observed outcomes (Frobenius norm).
+    \item \textbf{Simplicity}: Keep the structure low-rank (Nuclear norm).
+  \end{itemize}
+  \item It generalizes synthetic control and difference-in-differences.
+  \item Now, we'll see how to actually estimate it in practice.
+\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}{fect code for MCNN}
+
+fect in R: \url{https://github.com/xuyiqing/fect}
+
+\bigskip
+
+fect in Stata: \url{https://yiqingxu.org/packages/fect/stata/fect_md.html}
 
 \end{frame}
 
