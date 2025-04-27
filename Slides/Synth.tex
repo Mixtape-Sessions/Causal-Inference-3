@@ -1087,9 +1087,9 @@ Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
   \end{equation}
 
   \begin{itemize}
- \item $Z_i$ is observed features, $u_i$ is unobserved features, $\varepsilon_{it}$ is unit-level transitory shock
+ \item $\alpha_t$ is the time fixed effects, $Z_i$ is observed features, $u_i$ is unobserved features, $\varepsilon_{it}$ is unit-level transitory shock
     \item $\lambda_t$ is the set of \textcolor{navy}{factors} (macroeconomic shock) at time $t$.
-    \item $u_i$ is unit i's \textcolor{orange}{factor loading} (exposure) to the shocks.
+    \item $u_i$ is unit $i$'s \textcolor{orange}{factor loading} (exposure) to the shocks.
   \end{itemize}
 
   For example, $\lambda_t$ is a shock to the returns to technological ability and $u_i$ is unobserved ability.
@@ -1105,24 +1105,125 @@ Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
 
 Suppose we found $W^*$ such that:
 
- $$\sum^{J+1}w^*_jY_{jt}=Y_{1t}$$ $$\sum^{J+1}w^*_jZ_{j}=Z_{1}$$ and so on. This may only hold approximately in your sample. If you're able to do that, then you can establish a bound on the bias of the estimator.
+$$\sum^{J+1}_jw^*_jY_{jt}=Y_{1t}$$ $$\sum^{J+1}_jw^*_jZ_{j}=Z_{1}$$ but realistically only \emph{approximately}
 
 \end{frame}
 
+\begin{frame}{Factor Model Intuition}
+  But for the unobserved factors $u_i$, we can only \textbf{hope} that:
+  \[
+  \sum_{j=2}^{J+1} w_j^* u_j \approx u_1
+  \quad \text{(unobserved, approximate matching)}
+  \]
 
-\begin{frame}{Synthetic Control Bias Under Factor Model}
+  \vspace{0.5cm}
+
+  Since both $\lambda_t' u_i$ (systematic unobserved factors) and $\varepsilon_{it}$ (idiosyncratic shocks) are unobserved, the core challenge is:
+  
+  \begin{center}
+  \textbf{"How can we be sure we are balancing $u_i$ and not simply matching noise $\varepsilon_{it}$?"}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Thus the Bias Is...}
+  \begin{itemize}
+    \item So to understand the theoretical source of synthetic control's bias, we write down:
+    \[
+    \textcolor{red}{Y_{1t}^0} - \sum_{j=2}^{J+1} w_j^* Y_{jt}^0
+    \]
+    \item Next step:
+    \begin{itemize}
+      \item Expand both $\textcolor{red}{Y_{1t}^0}$ and $Y_{jt}^0$ using the factor model.
+      \item Carefully track what cancels and what remains.
+    \end{itemize}
+    \item Goal:
+    \begin{itemize}
+      \item Understand which parts synthetic control matches well, and
+      \item Where bias can still enter the estimator.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Expand Both Terms Using the Factor Model}
 
 \begin{eqnarray*}
-  Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
-  ^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
-  && - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
+\underbrace{\textcolor{red}{Y_{1t}^0} - \sum_{j=2}^{J+1} w_j^* Y_{jt}^0}_{\text{bias of synthetic control}} &=& \underbrace{(\alpha_t - \alpha_t)}_{\text{cancels automatically}} \\
+&& + \underbrace{(\theta_t Z_1 - \theta_t \sum_j w_j^* Z_j)}_{\text{cancels if observables are matched}} \\
+&& + \underbrace{(\lambda_t' u_1 - \lambda_t' \sum_j w_j^* u_j)}_{\text{cancels if unobserved factors are matched}} \\
+&& + (\varepsilon_{1t} - \sum_{j=2}^{J+1} w_j^* \varepsilon_{jt})
 \end{eqnarray*}
+\end{frame}
 
-\begin{itemize}
-  \item If $\sum_{t=1}^{T_0} \lambda_t' \lambda_t$ is nonsingular, then RHS will be close to zero if number of preintervention periods is ``large''  relative to size of transitory shocks 
-  \item Only units that are alike in observables and unobservables should produce similar trajectories of the outcome variable over extended periods of time
-\end{itemize}
 
+\begin{frame}{Sources of Synthetic Control Bias}
+  After expanding, we see that bias comes from two components:
+  \vspace{0.5cm}
+  \begin{itemize}
+    \item $\lambda_t' (u_1 - \sum_j w_j^* u_j)$
+    \begin{itemize}
+      \item $\Rightarrow$ Bias from mismatch in \textbf{unobserved factors} 
+      \item (e.g., unmeasured policy environment, social norms, culture)
+    \end{itemize}
+    \item $\varepsilon_{1t} - \sum_j w_j^* \varepsilon_{jt}$
+    \begin{itemize}
+      \item $\Rightarrow$ Bias from \textbf{idiosyncratic post-treatment shocks}
+      \item (e.g., random weather events, isolated firm closures)
+    \end{itemize}
+
+  \end{itemize}
+ Bias is from mismatch in unobserved factors $u_i$ and residual shocks $\varepsilon_{it}$.
+\end{frame}
+
+
+\begin{frame}{Proxying Unobserved Factors with Pre-Treatment Outcomes}
+  \small
+  \begin{itemize}
+    \item We cannot observe the latent factors $u_i$ directly, but we do observe pre-treatment outcomes (let $s$ be pre-treatment time periods):
+    \[
+    Y_{is}^0 = \alpha_s + \theta_s Z_i + \lambda_s' u_i + \varepsilon_{is}
+    \]
+    \item After matching $Z_i$ and cancelling $\alpha_s$, like we showed previously, then variation across $s$ is driven by:
+    \[
+    \lambda_s' u_i + \varepsilon_{is}
+    \]
+    \item \textbf{Idea:} Use pre-treatment outcomes to estimate $u_i$ up to noise.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Approximation of SCM Bias}
+  \small
+  \begin{itemize}
+    \item The mismatch in latent factors $\lambda_t' (u_1 - \sum_j w_j^* u_j)$ can be approximated as a weighted sum of pre-treatment residuals:
+  \end{itemize}
+
+  \vspace{0.5cm}
+
+  \[
+  \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} 
+  \lambda_t' \left( \sum_{n=1}^{T_0} \lambda_n' \lambda_n \right)^{-1} 
+  \lambda_s (\varepsilon_{js} - \varepsilon_{1s})
+  \]
+
+  \vspace{0.5cm}
+
+  \begin{itemize}
+    \item $\Rightarrow$ Imperfect matching on pre-treatment outcomes shows up as a weighted sum of noise terms.
+    \item $\Rightarrow$ With many pre-treatment periods and small $\varepsilon_{it}$, bias shrinks.
+  \end{itemize}
+\end{frame}
+
+
+
+
+
+\begin{frame}{When Pre-Treatment Fit is Poor}
+  \begin{itemize}
+    \item SCM bias is small when the treated unit is well-matched to the synthetic control on pre-treatment outcomes.
+    \item But in many real-world settings, \textbf{excellent pre-treatment fit is not possible}.
+    \item Then, the SCM estimator can have substantial bias.
+    \item \textbf{Idea:} Borrow from bias-corrected matching — adjust for the bias using an outcome model.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Synthetic control bounds}
@@ -1294,41 +1395,10 @@ Suppose we found $W^*$ such that:
 
 
 
-\begin{frame}{Summarizing the argument}
-
-\begin{enumerate}
-\item[1. ] Original synthetic control needs perfect fit and so will be biased in practical settings as it won't be the case we get weights constrained to be  on the convex hull
-\item[2. ] Augmentation of the synthetic control estimator uses an outcome model to estimate the bias caused by covariate imbalance 
-\item[3. ] Outcome model is a penalized ridge regression which will provide new weights we use to reweight the original synthetic control (bias adjustment in the spirit of Abadie and Imbens (2011)
-\end{enumerate}
-
-\end{frame}
-
-
-\begin{frame}{Summarizing the argument}
-
-\begin{enumerate}
-\item[4. ] When synth is imbalanced, augmented synth will reduce bias reweighting and bias correction, and when synth is balanced, they are the same
-\item[5. ] When synth is balanced, the augmented and original synth are identical (but in practice, they won't be identical)
-\item[6. ] They argue synth DiD can be seen as a special case of augmented synth
-\end{enumerate}
-
-\end{frame}
 
 
 
 
-
-\begin{frame}{Notation}
-
-\begin{itemize}
-\item Observe $J+1$ units over $T$ time periods
-\item Unit $1$ will be treated at time period $T_0=T-1$ (we allow for unit $1$ to be an average over treated units)
-\item Units $j=2 $ to $J+1$ (using ADH original notation) are ``never treated''
-\item $D_j$ is the treatment indicator
-\end{itemize}
-
-\end{frame}
 
 
 \begin{frame}[plain,shrink=20]
@@ -1384,34 +1454,6 @@ $Y_0'w*$ (i.e., optimally weighted donor pool) is the unit 1 ``synthetic control
 \end{frame}
 
 
-\begin{frame}{Predicting counterfactuals}
-
-Synth minimizes the following norm:
-
-\begin{eqnarray*}
-\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
-\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
-\end{eqnarray*}
-
-We are hoping that $\widehat{Y}_1^0$ with $Y_0' {w}^{*}$ based on ``perfect fit'' pre-treatment
-
-\end{frame}
-
-
-
-
-\begin{frame}{$V_X$ matrix}
-
-Synth minimizes the following norm:
-
-\begin{eqnarray*}
-\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
-\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
-\end{eqnarray*}
-
-$V_x$ is the ``importance'' matrix on $X_0$ (Stata default chooses $V_x$ that min pre-treatment MSE).
-\end{frame}
-
 \begin{frame}{Penalizing the weights with ridge}
 
 Synth minimizes the following norm:
@@ -1425,68 +1467,13 @@ Modification to the original synthetic control model is the inclusion of the pen
 
 \end{frame}
 
-\begin{frame}{Convex hull}
-
-Synth minimizes the following norm:
-
-\begin{eqnarray*}
-\textrm{min}_w = || V_X^{1/2} (X_1 - X_0'w) ||_2^2 + \psi \sum_{D_j=0}f(w_j)\\
-\textrm{s.t. }\sum_{j=2}^N w_{j} =1 \textrm{ and } w_j \geq 0
-\end{eqnarray*}
-
-These weights will be used to address imbalance, not so much the control units, bc this method is for when the weighted controls are still outside the convex hull
-
-\end{frame}
 
 
 
 
-\begin{frame}{Original ADH factor model and bias}
-
-\begin{eqnarray*}
-Y_{it}^0 = \alpha_t + \theta_t Z_i + \lambda_t u_i + \varepsilon_{it}
-\end{eqnarray*}
-
-\bigskip
-
-Original synth factor model (with ADH notation)
-
-\bigskip
-
-\begin{eqnarray*}
-Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
-^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
-&& - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
-\end{eqnarray*}
-
-\bigskip
-
-The bias of ADH synthetic control
 
 
-\end{frame}
-
-
-
-
-\begin{frame}{Perfect fit is necessary}
-
-\begin{eqnarray*}
-Y^0_{1t} - \sum^{J+1}_{j=2}w^*_jY_{jt} &=& \sum_{j=2}^{J+1} w_j^* \sum_{s=1}^{T_0} \lambda_t \bigg ( \sum_{n=1}^{T_0} \lambda_n'\lambda_n \bigg )
-^{-1} \lambda_s'(\varepsilon_{js} - \varepsilon_{1s} ) \\
-&& - \sum_{j=2}^{J+1} w_j^* (\varepsilon_{jt} - \varepsilon_{1t})
-\end{eqnarray*}
-
-\bigskip
-
-Recall that the bias of ADH required ``perfect fit'' using their factor model (I'll change $\lambda$ factor loadings in a minute)
-
-\end{frame}
-
-
-
-
-\begin{frame}{Perfect fit models heterogeneity}
+\begin{frame}{Recall from Earlier the Bias}
 
 
 \begin{eqnarray*}
@@ -1501,255 +1488,158 @@ Only units that are alike in observables and unobservables should produce simila
 \end{frame}
 
 
-\begin{frame}{Remember that ADH15 quote}
 
-\begin{quote}
-``The applicability of the [ADH2010] method requires a sizable number of pre-intervention periods. The reason is that the credibility of a synthetic control depends upon how well it tracks the treated unit’s characteristics and outcomes over an extended period of time prior to the treatment. \textbf{We do not recommend using this method when the pretreatment fit is poor or the number of pretreatment periods is small}. A sizable number of post-intervention periods may also be required in cases when the effect of the intervention emerges gradually after the intervention or changes over time.'' (my emphasis, Abadie, et al. 2015)
-\end{quote}
-
+\begin{frame}{Slight Change in SCM Notation}
+\small
+\begin{itemize}
+  \item Assume the untreated outcome follows:
+  \[
+  Y_{jt}^0 = m_{jt} + \varepsilon_{jt}
+  \]
+  where $m_{jt}$ captures the systematic component (e.g., factor structure), and $\varepsilon_{jt}$ is idiosyncratic noise.
+  \item $\widehat{m}(.)$ is an estimate of $m(.)$, and can be interpreted as estimating the bias arising from imperfect balance.
+  \item Bias correction becomes analogous to bias-corrected matching (Abadie and Imbens, 2011).
+\end{itemize}
 \end{frame}
 
-\begin{frame}{Slight change in synth notation}
+
+
+\begin{frame}{Bias Correction Logic}
+\small
+\[
+Y_{jt}^0 = m_{jt} + \varepsilon_{jt}
+\]
+\begin{itemize}
+  \item In synthetic control, balance is achieved on $m(.)$, not on $\varepsilon_{jt}$.
+  \item When pre-treatment fit is good, bias shrinks because:
+  \begin{itemize}
+    \item Matching balances the systematic component $m(.)$.
+    \item Idiosyncratic noise $\varepsilon_{jt}$ averages out over many pre-treatment periods.
+  \end{itemize}
+  \item Bias correction with $\widehat{m}(.)$ estimates and removes the remaining imbalance in $m(.)$.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Pre-Treatment Fit and Bias}
+\small
+\[
+Y_{jt}^0 = m_{jt} + \varepsilon_{jt}
+\]
+\begin{itemize}
+  \item SCM targets $m(.)$, the stable component.
+  \item Bias shrinks if:
+  \begin{itemize}
+    \item $m(.)$ is well balanced.
+    \item $\varepsilon_{jt}$ averages out over many pre-treatment periods.
+  \end{itemize}
+  \item In practice:
+  \begin{itemize}
+    \item Exact balance is rare.
+    \item Time series length $T_0$ is often not very large.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Estimating and Correcting the Bias}
+\small
+\begin{itemize}
+  \item Step 1: Estimate the synthetic control weights $\gamma^{\text{SCM}}$ to minimize pre-treatment imbalance.
+  \item Step 2: Estimate $m(.)$ using ridge regression on pre-treatment outcomes.
+  \item Step 3: Adjust the synthetic control prediction by correcting for estimated bias:
+  \[
+  \hat{Y}_{1T}^{\text{ASCM}} = \hat{Y}_{1T}^{\text{SCM}} + \left( \hat{m}(X_1) - \sum_{i: W_i=0} \gamma_i^{\text{SCM}} \hat{m}(X_i) \right)
+  \]
+  \item \textbf{Analogy:} Mirrors bias-corrected matching (Abadie and Imbens, 2011).
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{Augmented SCM Estimator}
+\small
+\[
+Y_1^{\text{aug},0} = \sum_{D_j=0} \widehat{w}_j^{\text{SCM}} Y_{jT} + \left( \widehat{m}(X_1) - \sum_{D_j=0} \widehat{w}_j^{\text{SCM}} \widehat{m}(X_j) \right)
+\]
+\[
+= \widehat{m}(X_1) + \sum_{D_j=0} \widehat{w}_j^{\text{SCM}} \left( Y_{jT} - \widehat{m}(X_j) \right)
+\]
+
+\vspace{0.4cm}
 
 \begin{itemize}
-\item Assume that our outcome, $Y^0_{jt}$, follows a factor model where $m(.)$ are pre-treatment potential outcomes: $$ Y_{jt}^0 = m_{jt} + \varepsilon_{jt}$$
-\item Since $\widehat{m(.)}$ estimates the post-treatment outcome, it can be viewed as an estimate of matching bias
-\item Procedure then becomes analogous to bias correction for inexact matching (Abadie and Imbens 2011)
+  \item First line: \textbf{Bias-corrected SCM}. Original SCM estimate plus a correction for imbalance in $\widehat{m}(X)$.
+  \item Second line: \textbf{Doubly robust form}. Ridge model prediction for treated unit plus weighted residuals from donors.
 \end{itemize}
-
 \end{frame}
 
 
 
-\begin{frame}{Bias correction}
-
- $$ Y_{jt}^0 = m_{jt} + \varepsilon_{jt}$$
-
+\begin{frame}{Key Interpretations}
+\small
 \begin{itemize}
-\item Recall from earlier by Abadie, et al. (2010) and Ferman and Pinto (2021) the same point made which is that as $T$ grows, the synthetic control achieves balance, not by fitting on the idiosyncratic noise (which is on average zero in large samples), but on the unobserved heterogeneity in the factor model
-\item Thus when the weights do achieve exact balance, the bias of synthetic control decreases with $T$
+  \item If $\widehat{m}(X_1) \approx \sum_j \widehat{w}_j^{\text{SCM}} \widehat{m}(X_j)$ (i.e., if bias is small), Augmented SCM $\approx$ SCM.
+  \item Bias correction mirrors bias-corrected matching (Abadie and Imbens, 2011).
+  \item Augmented SCM is \textbf{doubly robust}: 
+  \begin{itemize}
+    \item Consistent if either pre-treatment balance is good, or the ridge regression model is well-specified.
+  \end{itemize}
 \end{itemize}
-
 \end{frame}
 
 
-
-\begin{frame}{Common practice}
-
+\begin{frame}{Form of Outcome Model and Need for Ridge}
+\small
 \begin{itemize}
-\item Usually the number of time periods isn't much larger than the number of units
-\item And exact balance rarely holds, which if it doesn't hold, then the unobserved heterogeneity also doesn't get deleted even with large $T$
+  \item Estimate $\widehat{m}(X)$ to predict $Y^0$ from pre-treatment outcomes $X$.
+  \item Challenge: High-dimensional $X$ can cause overfitting.
+  \item Solution: Ridge regression to stabilize estimation.
+  \item Ridge introduces a hyperparameter $\lambda^{\text{ridge}}$ (selected by cross-validation).
 \end{itemize}
-
+\[
+\min_{\eta_0, \eta} \frac{1}{2} \sum_{D_j=0} (Y_j - (\eta_0 + X_j'\eta))^2 + \lambda^{\text{ridge}} \|\eta\|_2^2
+\]
 \end{frame}
 
-
-\begin{frame}{Treatment and control units}
-
-	\begin{figure}
-	\includegraphics[scale=0.07]{./lecture_includes/convexhull_1.png}
-	\end{figure}
-
-\end{frame}
-
-\begin{frame}{Convex hull -- ideal for synth}
-
-	\begin{figure}
-	\includegraphics[scale=0.07]{./lecture_includes/convexhull_2.png}
-	\end{figure}
-
-\end{frame}
-
-\begin{frame}{Outside the convex hull bc of dimensionality}
-
-	\begin{figure}
-	\includegraphics[scale=0.07]{./lecture_includes/convexhull_3.png}
-	\end{figure}
-
-\end{frame}
-
-\begin{frame}{Outside the convex hull bc of dimensionality}
-
-	\begin{figure}
-	\includegraphics[scale=0.07]{./lecture_includes/convexhull_4.png}
-	\end{figure}
-
-\end{frame}
-
-
-\begin{frame}{Estimating the bias}
-
+\begin{frame}{Adjusting the Synthetic Control Estimate}
+\small
+\[
+Y_1^{\text{aug},0} = \sum_{D_j=0} \widehat{w}_j^{\text{SCM}} Y_j + (X_1 - X_0' \widehat{w}^{\text{SCM}})' \widehat{\eta}^{\text{ridge}}
+\]
+\[
+= \sum_{D_j=0} \widehat{w}_j^{\text{aug}} Y_j
+\]
 \begin{itemize}
-\item Adjust the synthetic control to adjust for poor fit pre-treatment with an estimate of the ``matching bias'' for both the treatment group and the weighted average donor pools (Abadie and Imbens 2011)
-\item We will use our outcome regression model, $\widehat{m}_{jT}$, to estimate the post-treatment potential outcome $Y_{jT}^0$ which is recall unobserved for treatment group
-\item So there is in other words two steps involved: estimate the synthetic control finding optimal donor pool weights, then estimate the matching bias using ridge regression and adjust, similar to bias correction in Abadie and Imbens 2011
+  \item Start with SCM prediction.
+  \item Add a bias correction term: pre-treatment imbalance weighted by ridge coefficients.
+  \item Yields new augmented weights $\widehat{w}_j^{\text{aug}}$.
 \end{itemize}
-
-
 \end{frame}
 
-
-
-
-\begin{frame}{Setup of the estimator}
-
-$Y_1^{aug,0}$ is the augmented potential outcome based on synthetic control (first term) and adjustments for matching imbalance (second and third terms):
-
-\begin{eqnarray*}
-Y_1^{aug,0} &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{j} + \widehat{m}(X_1) - \sum_{D_j=0} \widehat{w}_j \widehat{m}(X_j) \\
-&=& \widehat{m}(X_1) + \sum_{D_j=0} \widehat{w_j}(Y_j - \widehat{m}(X_j))
-\end{eqnarray*}
-
-\end{frame}
-
-
-\begin{frame}{Interpreting line 1}
-
-\begin{eqnarray*}
-Y_1^{aug,0} &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
-&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
-\end{eqnarray*}
-
-(1) Note how in the first line the traditional synthetic control weighted outcomes are corrected by the imbalance in a particular function of the pre-treatment outcomes $\widehat{m}$. 
-\end{frame}
-
-
-
-
-\begin{frame}{Interpreting line 1}
-
-\begin{eqnarray*}
-Y_1^{aug,0}  &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
-&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
-\end{eqnarray*}
-
-(1) Since $\widehat{m}$ estimates the post-treatment outcome, we can view this as an estimate of the bias due to imbalance, which is similar to how you address imbalance in matching with a bias correction formula (Abadie and Imbens 2011). 
-
-\end{frame}
-
-
-
-
-\begin{frame}{Interpreting line 1}
-\begin{eqnarray*}
-Y_1^{aug,0}  &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
-&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
-\end{eqnarray*}
-
-(1) So if the bias is small, then synthetic control and augmented synthetic control will be similar because that interior term will be zero.
-
-\end{frame}
-
-\begin{frame}{Interpreting line 2}
-
-\begin{eqnarray*}
-Y_1^{aug,0}  &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{jT} + \bigg (\widehat{m}_{1T} - \sum_{D_j=0} \widehat{w}_j^{synth}\widehat{m}_{jT} \bigg ) \\
-&=& \widehat{m}_{1T} + \sum_{D_j=0} \widehat{w}_j^{synth} (Y_{jT} - \widehat{m}_{jT})
-\end{eqnarray*}
-
-(2) The second line is a double robust representation of the estimator equal to a regression based outcome model plus weighted residuals
-
-
-\end{frame}
-
-\begin{frame}{Form of outcome model}
-
+\begin{frame}{Ridge-Adjusted Weights}
+\small
+\[
+\widehat{w}_j^{\text{aug}} = \widehat{w}_j^{\text{SCM}} + (X_j - X_0' \widehat{w}^{\text{SCM}})' (X_0'X_0 + \lambda I_{T_0})^{-1} X_1
+\]
 \begin{itemize}
-
-\item To estimate $\widehat{m}$, recall it is an extrapolation of $Y^0$ based on covariates $X$ (ignoring subscripts)
-\item But this can have overfitting problems, so they introduce a ridge regression
-\item Issue will be with regards to the hyperparameter so they'll suggest cross validation
-\item It's inside this second ``reweighting'' stage (or bias adjustment) that the negative weighting comes and it comes from the outcome model itself extrapolating
-
+  \item Adjustment improves balance on pre-treatment outcomes.
+  \item Tradeoff: better balance vs. risk of introducing negative weights.
+  \item Ridge regularization controls the size of extrapolation.
 \end{itemize}
-
 \end{frame}
 
-
-
-
-\begin{frame}{Ridge Augmented SCM}
-
-\begin{eqnarray*}
-\textrm{arg min}_{\eta_0,\eta} \frac{1}{2} \sum_{D_j=0} (Y_j - (\eta_0 + X_j'\eta))^2 + \lambda^{ridge} || \eta ||_2^2
-\end{eqnarray*}Here we estimate $\widehat{m}(X_j)$ with ridge regularized linear model and penalty hyper parameter $\lambda^{ridge}$. Sorry -- this is not the same $\lambda$. I didn't create this notation though! Once we have those, we adjust for imbalance using the $\widehat{\eta}^{ridge}$ parameter as a weight on the outcome model itself. 
-
-\end{frame}
-
-\begin{frame}{Ridge Augmented SCM}
-
-\begin{eqnarray*}
-\textrm{arg min}_{\eta_0,\eta} \frac{1}{2} \sum_{D_j=0} (Y_j - (\eta_0 + X_j'\eta))^2 + \lambda^{ridge} || \eta ||_2^2
-\end{eqnarray*}Once we have those, we adjust for imbalance using the $\widehat{\eta}^{ridge}$ parameter as a weight on the outcome model itself. 
-
-\end{frame}
-
-
-
-
-\begin{frame}{Go back to that weighting but use the ridge parameters}
-
-\begin{eqnarray*}
-Y_1^{aug,0} &=& \sum_{D_j=0} \widehat{w}_j^{synth} Y_{j} + \bigg ( X_1 - \sum_{D_j=0} \widehat{w}_j^{synth} X_j \bigg ) \widehat{\eta}^{ridge} \\
-&=& \sum_{D_j=0} \widehat{w}_j^{aug}Y_j
-\end{eqnarray*}What you're trying to do is adjust with the $\widehat{w}_j^{aug}$ weights to improve balance.  
-
-\end{frame}
-
-
-\begin{frame}{The ridge weights are key to the augmentation}
-
-\begin{eqnarray*}
-\widehat{w}_j^{aug} = \widehat{w}_j^{synth} + (X_j - X_0' \widehat{w}_j^{synth}) ' (X_0'X_0 + \lambda I_{T_0})^{-1}X_i
-\end{eqnarray*}
-
-The second term is adjusting the original synthetic control weights, $w_j^{synth}$ for better balance. Again remember -- we are trying to address the bias due to imbalance. You can achieve better balance, but at higher variance and can introduce negative weights. 
-
-\end{frame}
-
-
-
-\begin{frame}{Ridge will allow negative weights via extrapolation}
-
-\begin{eqnarray*}
-\widehat{w}_j^{aug} = \widehat{w}_j^{synth} + (X_j - X_0' \widehat{w}_j^{synth}) ' (X_0'X_0 + \lambda I_{T_0})^{-1}X_i
-\end{eqnarray*}
-
-Relaxing the constraint from synth that weights be non-negative, as non-negative weights prohibit extrapolation. But we don't have synthetic control on the simplex, so we \emph{must} extrapolate, otherwise synth will be biased.
-
-\end{frame}
-
-
-
-\begin{frame}{Summarizing and some comments}
-
+\begin{frame}{Why Negative Weights Appear}
+\small
 \begin{itemize}
-\item When the treated unit lies in the convex hull of the control units so that the synth weights exactly balance lagged outcomes, then SCM and Ridge ASCM are the same
-\item When synth weights do not achieve exact balance, Ridge ASCM will use negative weights to extrapolate from the convex hull to the control units
-\item The amount of extrapolation will be determined by how much imbalance we're talking about and the estimated hyperparameter $\widehat{\lambda}^{ridge}$
-\item When synth has good pre-treatment fit or when $\lambda^{ridge}$ is large, then adjustment will be small and the augmented weights will be close to the SCM weights
+  \item Standard SCM restricts weights to be non-negative and sum to 1 (simplex constraint).
+  \item Ridge-augmented SCM relaxes non-negativity to improve balance.
+  \item Extrapolation (small negative weights) is necessary if the treated unit lies outside the convex hull of donors.
+  \item Ridge penalty ensures extrapolation remains modest and interpretable.
 \end{itemize}
-
 \end{frame}
 
 
-
-\begin{frame}{Intuition}
-
-Ridge begins at the center of control units, while Ridge ASCM begins at the synth solution. Both move towards an exact fit solution as the hyperparameter is reduced. It is possible to achieve the same level of balance with non-negative weights.  Both ridge and Ridge ASCM extrapolate from the support of the data to improve pre-treatment fit relative to synth alone. Let's look at a picture!
-
-
-\end{frame}
-
-
-
-\begin{frame}[plain]
-
-	\begin{figure}
-	\includegraphics[scale=0.5]{./lecture_includes/aug_1.png}
-	\end{figure}
-	
-\end{frame}	
 
 
 \begin{frame}{Conformal Inference}

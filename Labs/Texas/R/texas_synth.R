@@ -20,6 +20,7 @@ syn <- augsynth(
   progfunc = "None", scm = T
 )
 
+list(syn$weights)
 summary(syn)
 # compute point-wise confidence intervals using the Jackknife+ procedure
 plot(syn, inf_type = "jackknife+")
