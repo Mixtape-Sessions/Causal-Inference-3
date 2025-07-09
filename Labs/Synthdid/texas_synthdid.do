@@ -4,7 +4,7 @@ clear
 capture log close
 
 * installation
-net install sdid, from("https://raw.githubusercontent.com/daniel-pailanir/sdid/master") replace
+* net install sdid, from("https://raw.githubusercontent.com/daniel-pailanir/sdid/master") replace
 
 * Load the dataset
 use "https://raw.github.com/scunning1975/mixtape/master/texas.dta", clear
