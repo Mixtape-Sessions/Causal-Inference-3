@@ -15,7 +15,7 @@ replace treated = 1 if state == "Texas" & year >= 1993
 
 * Run the Synthetic Difference-in-Differences estimator
 #delimit ;
-sdid bmprison statefip year treated, vce(placebo) reps(100) seed(123)
+sdid bmprison statefip year treated, covariates(aidscapita black perc1519 poverty ur alcohol crack) vce(placebo) reps(100) seed(123)
     graph g1on g1_opt(xtitle("") scheme(plotplainblind)) 
     g2_opt(ylabel(0(10000)75000) xlabel(1985(5)2000) ytitle("Black Male Imprisonment") 
            xtitle("") scheme(plotplainblind))
